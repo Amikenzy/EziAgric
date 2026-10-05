@@ -60,8 +60,8 @@ importers:
         specifier: 2.117.2
         version: 2.117.2(@opentelemetry/api@1.9.1)
       '@types/helmet':
-        specifier: 0.0.48
-        version: 0.0.48
+        specifier: 4.0.0
+        version: 4.0.0
       axios:
         specifier: 1.20.0
         version: 1.20.0
@@ -2118,8 +2118,9 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
-  '@types/helmet@0.0.48':
-    resolution: {integrity: sha512-C7MpnvSDrunS1q2Oy1VWCY7CDWHozqSnM8P4tFeRTuzwqni+PYOjEredwcqWG+kLpYcgLsgcY3orHB54gbx2Jw==}
+  '@types/helmet@4.0.0':
+    resolution: {integrity: sha512-ONIn/nSNQA57yRge3oaMQESef/6QhoeX7llWeDli0UZIfz8TQMkfNPTXA8VnnyeA1WUjG2pGqdjEIueYonMdfQ==}
+    deprecated: This is a stub types definition. helmet provides its own type definitions, so you do not need this installed.
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
@@ -7335,9 +7336,9 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
-  '@types/helmet@0.0.48':
+  '@types/helmet@4.0.0':
     dependencies:
-      '@types/express': 5.0.6
+      helmet: 8.3.0
 
   '@types/http-errors@2.0.5': {}
 
