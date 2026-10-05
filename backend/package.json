@@ -45,7 +45,7 @@
     "@supabase/supabase-js": "2.117.2",
     "@types/helmet": "0.0.48",
     "axios": "1.20.0",
-    "bullmq": "5.79.2",
+    "bullmq": "6.3.11",
     "cors": "2.8.6",
     "dotenv": "17.3.1",
     "express": "5.2.1",
