@@ -33,7 +33,7 @@
     "expo-file-system": "~18.0.12",
     "expo-image-manipulator": "~13.0.6",
     "expo-image-picker": "~16.0.6",
-    "expo-localization": "~15.0.3",
+    "expo-localization": "~57.0.2",
     "i18next": "^23.11.5",
     "react-i18next": "^14.1.2",
     "expo-device": "^57.0.2",
