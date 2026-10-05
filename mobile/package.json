@@ -30,7 +30,7 @@
     "@testing-library/react-native": "^13.3.3",
     "axios": "^1.20.0",
     "expo": "^52.0.0",
-    "expo-file-system": "~18.0.12",
+    "expo-file-system": "~57.0.7",
     "expo-image-manipulator": "~13.0.6",
     "expo-image-picker": "~16.0.6",
     "expo-localization": "~15.0.3",
