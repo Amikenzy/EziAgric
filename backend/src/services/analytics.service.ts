@@ -43,7 +43,22 @@ export interface CooperativeTradeRecord {
   amount: number;
   status: string;
   createdAt: string | Date;
+  completedAt?: string | Date | null;
   disputed?: boolean;
+}
+
+/**
+ * One row per UTC day (bucketed by trade creation date). Time-to-settle is
+ * measured from creation to `completedAt` for trades that have completed.
+ */
+export interface DailyMetricsRow {
+  date: string;
+  trades: number;
+  gmv: number;
+  disputedTrades: number;
+  disputeRate: number;
+  settledTrades: number;
+  avgTimeToSettleHours: number | null;
 }
 
 export interface CooperativeMemberRecord {
@@ -203,6 +218,21 @@ export class AnalyticsService {
   }
 
   /**
+   * Daily trade metrics (trades, GMV, dispute rate, time-to-settle) for a
+   * cooperative over an optional date range.
+   */
+  async getCooperativeDailyMetrics(
+    cooperativeId: string,
+    range: CooperativeStatsDateRange = {},
+  ): Promise<DailyMetricsRow[]> {
+    const trades = await this.statsSource.listTrades(cooperativeId);
+    return buildDailyMetrics(
+      trades.filter((trade) => trade.cooperativeId === cooperativeId),
+      range,
+    );
+  }
+
+  /**
    * Override in production to persist to Postgres once an AnalyticsEvent
    * table exists in the schema. The default is a no-op so the service works
    * without a DB migration.
@@ -246,6 +276,92 @@ function buildStatsCacheKey(
   const startKey = start ? start.toISOString() : "*";
   const endKey = end ? end.toISOString() : "*";
   return `cooperative:stats:${cooperativeId}:${startKey}:${endKey}`;
+}
+
+/**
+ * Buckets trades by UTC creation day. Pure so overall (cross-cooperative)
+ * metrics can be produced by passing the combined trade list.
+ */
+export function buildDailyMetrics(
+  trades: CooperativeTradeRecord[],
+  range: CooperativeStatsDateRange = {},
+): DailyMetricsRow[] {
+  const start = normalizeDate(range.start);
+  const end = normalizeDate(range.end);
+  const buckets = new Map<
+    string,
+    { trades: number; gmv: number; disputed: number; settled: number; settleMs: number }
+  >();
+
+  for (const trade of trades) {
+    if (!isWithinRange(trade.createdAt, start, end)) {
+      continue;
+    }
+    const createdAt = new Date(trade.createdAt);
+    const date = createdAt.toISOString().slice(0, 10);
+    const bucket = buckets.get(date) ?? {
+      trades: 0,
+      gmv: 0,
+      disputed: 0,
+      settled: 0,
+      settleMs: 0,
+    };
+
+    bucket.trades += 1;
+    bucket.gmv += trade.amount ?? 0;
+    if (trade.disputed === true || trade.status === "disputed") {
+      bucket.disputed += 1;
+    }
+    if (trade.completedAt) {
+      const settleMs = new Date(trade.completedAt).getTime() - createdAt.getTime();
+      if (Number.isFinite(settleMs) && settleMs >= 0) {
+        bucket.settled += 1;
+        bucket.settleMs += settleMs;
+      }
+    }
+
+    buckets.set(date, bucket);
+  }
+
+  return [...buckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, bucket]) => ({
+      date,
+      trades: bucket.trades,
+      gmv: bucket.gmv,
+      disputedTrades: bucket.disputed,
+      disputeRate: bucket.trades === 0 ? 0 : bucket.disputed / bucket.trades,
+      settledTrades: bucket.settled,
+      avgTimeToSettleHours:
+        bucket.settled === 0 ? null : bucket.settleMs / bucket.settled / 3_600_000,
+    }));
+}
+
+/**
+ * Serialises daily metrics rows to CSV (header + one line per day).
+ */
+export function toDailyMetricsCsv(rows: DailyMetricsRow[]): string {
+  const header = [
+    "date",
+    "trades",
+    "gmv",
+    "disputed_trades",
+    "dispute_rate",
+    "settled_trades",
+    "avg_time_to_settle_hours",
+  ];
+  const lines = rows.map((row) =>
+    [
+      row.date,
+      row.trades,
+      row.gmv,
+      row.disputedTrades,
+      row.disputeRate,
+      row.settledTrades,
+      row.avgTimeToSettleHours ?? "",
+    ].join(","),
+  );
+  return [header.join(","), ...lines].join("\n") + "\n";
 }
 
 export const analyticsService = new AnalyticsService();
