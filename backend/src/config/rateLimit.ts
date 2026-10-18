@@ -47,4 +47,9 @@ export const RATE_LIMIT_CONFIG = {
     max: 60,
     message: "Batch query quota exceeded, try again later.",
   },
+  driverToken: {
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: "Too many driver link attempts, try again later.",
+  },
 } as const satisfies Record<string, RateLimitPreset>;
