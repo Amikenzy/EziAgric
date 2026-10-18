@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { sorobanAdminService } from "../services/sorobanAdmin.service";
 import { validateAdminReason } from "../lib/adminReason";
+import { appLogger } from "../middleware/logger";
 
 const prisma = new PrismaClient();
 
@@ -25,7 +26,7 @@ export const getStreamRemaining = async (req: Request, res: Response): Promise<v
       pendingClawback: stream.pendingClawback,
     });
   } catch (err) {
-    console.error("[StreamController] Error fetching stream remaining:", err);
+    appLogger.error({ error: err }, "Error fetching stream remaining");
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -78,7 +79,7 @@ export const executeStreamClawback = async (req: Request, res: Response): Promis
       reason: validatedReason ?? null,
     });
   } catch (err) {
-    console.error("[StreamController] Error executing stream clawback:", err);
+    appLogger.error({ error: err }, "Error executing stream clawback");
     res.status(500).json({ error: err instanceof Error ? err.message : "Internal server error" });
   }
 };
