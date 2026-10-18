@@ -114,6 +114,10 @@ for file in "${FILES[@]}"; do
     'DROP COLUMN/CONSTRAINT breaks running code — expand/migrate/contract phase 3 only'
   scan_block "$file" 'TRUNCATE([[:space:]]|$)' \
     'TRUNCATE is destructive — emergency-only, backup first'
+  scan_block "$file" 'DROP[[:space:]]+TYPE' \
+    'DROP TYPE breaks running code still using the enum — expand/migrate/contract phase 3 only'
+  scan_block "$file" 'ALTER[[:space:]]+TYPE[^;]*RENAME' \
+    'Enum rename (Prisma enum-value removal recreates the type) breaks running code — two-phase expand/migrate/contract'
   scan_block "$file" 'ALTER[[:space:]]+TABLE[^;]*RENAME[[:space:]]+(TO|COLUMN)' \
     'Rename breaks code referencing the old name — two-phase expand/migrate/contract'
   scan_block "$file" 'ALTER[[:space:]]+(TABLE|COLUMN)[^;]*SET[[:space:]]+NOT[[:space:]]+NULL' \
