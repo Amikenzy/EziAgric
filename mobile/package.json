@@ -39,7 +39,7 @@
     "expo-device": "^57.0.2",
     "expo-notifications": "^57.0.21",
     "expo-secure-store": "^13.0.2",
-    "expo-sqlite": "15.0.3",
+    "expo-sqlite": "57.0.3",
     "react": "^18.3.1",
     "react-native": "0.87.1",
     "react-native-gesture-handler": "^2.17.1",
