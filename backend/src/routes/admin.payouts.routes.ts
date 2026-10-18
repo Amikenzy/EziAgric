@@ -11,7 +11,7 @@ import {
 } from "../services/payoutIntent.service";
 import { StellarService } from "../services/stellar.service";
 
-const reconcileBodySchema = z.object({
+export const reconcileBodySchema = z.object({
   /** Skip intents touched more recently than this, so in-flight work is left alone. */
   olderThanMs: z.number().int().min(0).max(86_400_000).default(60_000),
   limit: z.number().int().min(1).max(500).default(100),
@@ -24,7 +24,7 @@ const reconcileBodySchema = z.object({
  * seen the transaction tells us nothing, and treating that as failure would
  * release the idempotency key while a payout may still be in flight.
  */
-async function chainOutcome(
+export async function chainOutcome(
   stellar: Pick<StellarService, "getTransactionStatus">,
   txHash: string,
 ): Promise<"SUCCESS" | "FAILED" | "NOT_FOUND"> {
