@@ -908,6 +908,35 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "PartialDeliveryConfirmed",
+      "rustStruct": "PartialDeliveryConfirmedEvent",
+      "topics": [
+        "PARTDL"
+      ],
+      "fields": [
+        {
+          "name": "trade_id",
+          "type": "u64"
+        },
+        {
+          "name": "delivered_bps",
+          "type": "u32"
+        },
+        {
+          "name": "seller_amount",
+          "type": "i128"
+        },
+        {
+          "name": "buyer_refund",
+          "type": "i128"
+        },
+        {
+          "name": "fee_amount",
+          "type": "i128"
+        }
+      ]
     }
   ]
 }

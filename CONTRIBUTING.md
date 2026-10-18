@@ -113,6 +113,11 @@ Mark breaking changes with `!` after the type/scope (`feat(api)!: ...`) or a `BR
 
 - Fill in the [PR template](.github/pull_request_template.md), including the issue's area, complexity and `Closes #<number>`.
 - All relevant CI gates must pass (see README → *Required PR CI Gates*).
+- Arch-affecting changes (new or removed components, changes to who may call an
+  entry point, or to the message order that settles a trade or dispute) update the
+  relevant diagram under `docs/architecture` in the same PR, and say in the PR
+  description why no diagram changed when that is not obvious — see
+  [docs/architecture/README.md](docs/architecture/README.md).
 
 ## Where do implementation and PR notes go?
 
