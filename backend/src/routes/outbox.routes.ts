@@ -178,6 +178,12 @@ export function createOutboxRoutes(): Router {
           });
         }
 
+        if (eventId && !/^[1-9]\d*$/.test(String(eventId))) {
+          return res.status(400).json({
+            error: "Invalid eventId: must be a positive integer",
+          });
+        }
+
         const prisma = require("../lib/db").prisma;
 
         const event = await prisma.chainEventOutbox.findFirst({
