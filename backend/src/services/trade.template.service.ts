@@ -47,10 +47,12 @@ export class TradeTemplateService {
     });
   }
 
-  async list(userAddress: string) {
+  async list(userAddress: string, { page = 1, limit = 20 }: { page?: number; limit?: number } = {}) {
     return this.prisma.tradeTemplate.findMany({
       where: { userAddress: userAddress.toLowerCase() },
       orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * limit,
+      take: limit,
     });
   }
 
