@@ -64,7 +64,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "9.39.5",
     "@pact-foundation/pact": "17.1.4",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
