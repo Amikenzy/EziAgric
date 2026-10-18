@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { redis } from '../lib/redis';
 import { isCooperativeManager } from '../lib/accessControl';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/db';
 
 const STATS_CACHE_TTL_SECONDS = 5 * 60;
 
