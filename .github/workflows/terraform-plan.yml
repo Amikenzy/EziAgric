@@ -67,7 +67,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Assume plan role (read-only)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ env.PLAN_ROLE_ARN }}
           role-session-name: tf-plan-pr${{ github.event.pull_request.number }}-${{ matrix.environment }}
