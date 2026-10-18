@@ -5,26 +5,24 @@
  * and manual intervention when needed
  */
 
-import { Router, Request, Response, NextFunction } from "express";
+import { Router, Request, Response } from "express";
 import { jobHeartbeatService } from "../services/jobHeartbeat.service";
 import { appLogger } from "../middleware/logger";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { adminMiddleware } from "../middleware/admin.middleware";
 import { prisma } from "../lib/db";
 
 export function createJobHealthRoutes(): Router {
   const router = Router();
 
-  // Middleware to require admin role (assumes auth middleware exists)
-  const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-    // This would be implemented based on your auth system
-    // For now, we'll assume there's a check in place
-    next();
-  };
+  // Operator-only: authenticate, then require admin
+  router.use(authMiddleware, adminMiddleware);
 
   /**
    * GET /health/jobs
    * Get health status of all scheduled jobs
    */
-  router.get("/jobs", isAdmin, async (req: Request, res: Response) => {
+  router.get("/jobs", async (req: Request, res: Response) => {
     try {
       const jobHealth = await jobHeartbeatService.getAllJobHealth();
 
@@ -80,7 +78,7 @@ export function createJobHealthRoutes(): Router {
    * GET /health/jobs/:jobType
    * Get detailed health status for a specific job
    */
-  router.get("/jobs/:jobType", isAdmin, async (req: Request, res: Response) => {
+  router.get("/jobs/:jobType", async (req: Request, res: Response) => {
     try {
         const jobTypeParam = Array.isArray(req.params.jobType)
           ? req.params.jobType[0]
@@ -114,7 +112,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.get(
     "/dashboard",
-    isAdmin,
     async (req: Request, res: Response) => {
       try {
         const allHeartbeats = await prisma.jobHeartbeat.findMany();
@@ -199,7 +196,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.post(
     "/jobs/:jobType/manual-check",
-    isAdmin,
     async (req: Request, res: Response) => {
       try {
         const jobTypeParam = Array.isArray(req.params.jobType)
@@ -242,7 +238,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.post(
     "/jobs/:jobType/reset-failures",
-    isAdmin,
     async (req: Request, res: Response) => {
       try {
         const jobTypeParam = Array.isArray(req.params.jobType)

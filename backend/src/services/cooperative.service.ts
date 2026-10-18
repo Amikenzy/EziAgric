@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { redis } from '../lib/redis';
 import { isCooperativeManager } from '../lib/accessControl';
 import { prisma } from '../lib/db';
+import { formatStroopsToDecimal, parseDecimalToStroops } from '../lib/money';
 
 const STATS_CACHE_TTL_SECONDS = 5 * 60;
 
@@ -92,7 +93,17 @@ export async function getCooperativeStats(
   ]);
 
   const totalTrades = trades.length;
-  const volume = trades.reduce((sum, trade) => sum + Number(trade.amount ?? 0), 0);
+  // Summed in integer stroops so the total stays exact; only the final value is
+  // converted to a number at the response boundary.
+  const volumeStroops = trades.reduce((sum, trade) => {
+    try {
+      return sum + parseDecimalToStroops(String(trade.amount ?? 0));
+    } catch {
+      // A malformed row must not take down the whole stats call.
+      return sum;
+    }
+  }, 0n);
+  const volume = Number(formatStroopsToDecimal(volumeStroops));
   const activeTrades = trades.filter((trade) => trade.status === 'ACTIVE').length;
   const disputedTrades = trades.filter((trade) => trade.status === 'DISPUTED').length;
   const disputeRate = totalTrades > 0 ? disputedTrades / totalTrades : 0;

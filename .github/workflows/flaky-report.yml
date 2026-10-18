@@ -54,7 +54,7 @@ jobs:
           node-version: 22
 
       - name: Download recent CI flake reports (last 7 days)
-        uses: dawidd6/action-download-artifact@v25
+        uses: dawidd6/action-download-artifact@v27
         continue-on-error: true
         with:
           workflow: ci.yml

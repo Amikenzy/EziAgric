@@ -54,6 +54,7 @@ Always use `scripts/migrate-safe.sh` instead of running `prisma migrate deploy` 
 | `DROP COLUMN` | Ensure no code references column; deploy code first |
 | `DROP TABLE` | Ensure no foreign key references; archive data if needed |
 | `TRUNCATE` | Only in emergency data cleanup; always backup first |
+| `DROP TYPE` / enum rename (`ALTER TYPE … RENAME`) | Prisma removing an enum value recreates the type; deploy code that no longer uses the value first, then contract |
 
 ### Expand → Migrate → Contract discipline
 

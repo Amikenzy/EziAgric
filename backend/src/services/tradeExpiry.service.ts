@@ -1,4 +1,4 @@
-import { PrismaClient, TradeStatus } from '@prisma/client';
+import { Prisma, PrismaClient, TradeStatus } from '@prisma/client';
 import { prisma as defaultPrisma } from '../lib/db';
 import { appLogger } from '../middleware/logger';
 import { notificationQueue } from '../jobs/queue';
@@ -24,6 +24,12 @@ export class TradeExpiryService {
    * Scans for trades whose `expiresAt` has passed and whose status is still
    * non-terminal. Marks each as EXPIRED and enqueues buyer/seller notifications.
    * Idempotent: already-expired trades are skipped.
+   *
+   * The status flip is a single batched UPDATE ... FROM (VALUES ...) instead of
+   * one updateMany per trade. Each row still carries its own `version` and
+   * status guard, so a trade modified since the scan is not flipped and is not
+   * notified. A 500-trade batch costs 2 DB round-trips for the sweep (findMany +
+   * batched UPDATE) instead of 501 (findMany + 500 sequential updateMany).
    */
   async sweepExpiredTrades(batchSize = 100): Promise<SweepResult> {
     const now = new Date();
@@ -50,21 +56,34 @@ export class TradeExpiryService {
 
     result.scanned = stale.length;
 
-    for (const trade of stale) {
-      try {
-        await this.db.trade.updateMany({
-          where: {
-            id: trade.id,
-            version: trade.version,
-            status: { in: EXPIRABLE_STATUSES },
-          },
-          data: {
-            status: TradeStatus.EXPIRED,
-            expiredAt: now,
-            version: { increment: 1 },
-          },
-        });
+    if (stale.length === 0) return result;
 
+    let flippedIds: Set<number>;
+    try {
+      const flipped = await this.db.$queryRaw<{ id: number }[]>(Prisma.sql`
+        UPDATE "Trade" AS t
+        SET "status" = ${TradeStatus.EXPIRED}::"TradeStatus",
+            "expiredAt" = ${now},
+            "updatedAt" = ${now},
+            "version" = t."version" + 1
+        FROM (VALUES ${Prisma.join(stale.map((t) => Prisma.sql`(${t.id}::int, ${t.version}::int)`))}) AS v("id", "version")
+        WHERE t."id" = v."id"
+          AND t."version" = v."version"
+          AND t."status" IN (${Prisma.join(EXPIRABLE_STATUSES.map((s) => Prisma.sql`${s}::"TradeStatus"`))})
+        RETURNING t."id"
+      `);
+      flippedIds = new Set(flipped.map((row) => row.id));
+    } catch (err) {
+      result.errors = stale.length;
+      appLogger.error({ batchSize: stale.length, err }, 'Sweeper failed to expire trade batch');
+      return result;
+    }
+
+    for (const trade of stale) {
+      // Lost the optimistic lock (changed since the scan): leave it for the next tick.
+      if (!flippedIds.has(trade.id)) continue;
+
+      try {
         await Promise.all([
           notificationQueue.add('trade-expired-buyer', {
             userAddress: trade.buyerAddress,
@@ -95,18 +114,25 @@ export class TradeExpiryService {
   }
 
   /** Returns trades that have been marked EXPIRED but not yet refunded on-chain. */
-  async getPendingRefunds(limit = 50) {
-    return this.db.trade.findMany({
-      where: { status: TradeStatus.EXPIRED },
-      take: limit,
-      orderBy: { expiredAt: 'asc' },
-      select: {
-        tradeId: true,
-        buyerAddress: true,
-        amountUsdc: true,
-        expiredAt: true,
-      },
-    });
+  async getPendingRefunds(page = 1, limit = 50) {
+    const skip = (page - 1) * limit;
+    const where = { status: TradeStatus.EXPIRED };
+    const [items, total] = await Promise.all([
+      this.db.trade.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { expiredAt: 'asc' },
+        select: {
+          tradeId: true,
+          buyerAddress: true,
+          amountUsdc: true,
+          expiredAt: true,
+        },
+      }),
+      this.db.trade.count({ where }),
+    ]);
+    return { items, total, page, limit };
   }
 }
 
