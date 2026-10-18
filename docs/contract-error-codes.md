@@ -70,9 +70,15 @@ live in `pub mod trade_errors` in `lib.rs`.
 | `AMENDMENT_SELF_ACCEPT`         | 403         | The proposer tried to accept their own amendment; only the counter-party may accept.                 |
 | `AMENDMENT_INVALID_AMOUNT`      | 400         | Proposed amount is zero, negative, or above `MAX_TRADE_VALUE`.                                       |
 | `AMENDMENT_INVALID_DEADLINE`    | 400         | Proposed `expires_at` is not in the future (checked on proposal and again on acceptance).            |
+| `BATCH_TOO_LARGE`               | 400         | `get_trades` was called with more than `MAX_BATCH_TRADES` (50) ids. Split the request; the batch is never truncated. |
 
 `INVALID_LOSS_RATIO` is also raised by `propose_amendment`, which applies the
 same loss-ratio validation as `create_trade`.
+
+`BATCH_TOO_LARGE` is the only caller-error raised by a read-only entry point:
+`get_trades` (#351) refuses an oversized batch instead of returning a silently
+incomplete page, so a client can tell "ask me in chunks" apart from "that trade
+does not exist" (which is reported as `None` in the returned vector).
 
 ---
 

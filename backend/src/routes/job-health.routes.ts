@@ -8,18 +8,21 @@
 import { Router, Request, Response } from "express";
 import { jobHeartbeatService } from "../services/jobHeartbeat.service";
 import { appLogger } from "../middleware/logger";
-import { prisma } from "../lib/db";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
+import { prisma } from "../lib/db";
 
 export function createJobHealthRoutes(): Router {
   const router = Router();
+
+  // Operator-only: authenticate, then require admin
+  router.use(authMiddleware, adminMiddleware);
 
   /**
    * GET /health/jobs
    * Get health status of all scheduled jobs
    */
-  router.get("/jobs", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  router.get("/jobs", async (req: Request, res: Response) => {
     try {
       const jobHealth = await jobHeartbeatService.getAllJobHealth();
 
@@ -75,7 +78,7 @@ export function createJobHealthRoutes(): Router {
    * GET /health/jobs/:jobType
    * Get detailed health status for a specific job
    */
-  router.get("/jobs/:jobType", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  router.get("/jobs/:jobType", async (req: Request, res: Response) => {
     try {
         const jobTypeParam = Array.isArray(req.params.jobType)
           ? req.params.jobType[0]
@@ -109,8 +112,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.get(
     "/dashboard",
-    authMiddleware,
-    adminMiddleware,
     async (req: Request, res: Response) => {
       try {
         const allHeartbeats = await prisma.jobHeartbeat.findMany();
@@ -195,8 +196,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.post(
     "/jobs/:jobType/manual-check",
-    authMiddleware,
-    adminMiddleware,
     async (req: Request, res: Response) => {
       try {
         const jobTypeParam = Array.isArray(req.params.jobType)
@@ -239,8 +238,6 @@ export function createJobHealthRoutes(): Router {
    */
   router.post(
     "/jobs/:jobType/reset-failures",
-    authMiddleware,
-    adminMiddleware,
     async (req: Request, res: Response) => {
       try {
         const jobTypeParam = Array.isArray(req.params.jobType)
