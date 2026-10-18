@@ -48,8 +48,8 @@ importers:
         specifier: ~13.0.6
         version: 13.0.6(expo@58.0.10)
       expo-image-picker:
-        specifier: ~16.0.6
-        version: 16.0.6(expo@58.0.10)
+        specifier: ~58.0.10
+        version: 58.0.10(expo@58.0.10)
       expo-localization:
         specifier: ~57.0.2
         version: 57.0.2(expo@58.0.10)(react@18.3.1)
@@ -2338,13 +2338,18 @@ packages:
     peerDependencies:
       expo: '*'
 
+  expo-image-loader@58.0.3:
+    resolution: {integrity: sha512-zlHudxC8OObyqCHmvdxJqURI7886KJ0cUJyn7R/a8FOD9fP837xKDN+u4SIt7XsSSVPNXzMd4Y7mN0pmup8NGA==}
+    peerDependencies:
+      expo: '*'
+
   expo-image-manipulator@13.0.6:
     resolution: {integrity: sha512-Rz8Kcfx1xYm0AsIDi6zfKYUDnwCP8edgYXWb00KAkzOF8bDxwzTrnvESWhCiveM4IB3fojjLpNeENME34p3bzA==}
     peerDependencies:
       expo: '*'
 
-  expo-image-picker@16.0.6:
-    resolution: {integrity: sha512-HN4xZirFjsFDIsWFb12AZh19fRzuvZjj2ll17cGr19VNRP06S/VPQU3Tdccn5vwUzQhOBlLu704CnNm278boiQ==}
+  expo-image-picker@58.0.10:
+    resolution: {integrity: sha512-yqQC9UYMWSUxk6U0jaS1vE1w+b9Ru0FJmQ3KjUf9Q9oVg5xBxmg8+Ts+usazMAuPoskNIXJ++VZ+uK6br9yUGQ==}
     peerDependencies:
       expo: '*'
 
@@ -7751,15 +7756,19 @@ snapshots:
     dependencies:
       expo: 58.0.10(@babel/core@7.29.7)(@expo/dom-webview@58.0.2)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
 
+  expo-image-loader@58.0.3(expo@58.0.10):
+    dependencies:
+      expo: 58.0.10(@babel/core@7.29.7)(@expo/dom-webview@58.0.2)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
+
   expo-image-manipulator@13.0.6(expo@58.0.10):
     dependencies:
       expo: 58.0.10(@babel/core@7.29.7)(@expo/dom-webview@58.0.2)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
       expo-image-loader: 5.0.0(expo@58.0.10)
 
-  expo-image-picker@16.0.6(expo@58.0.10):
+  expo-image-picker@58.0.10(expo@58.0.10):
     dependencies:
       expo: 58.0.10(@babel/core@7.29.7)(@expo/dom-webview@58.0.2)(react-native@0.87.1(@babel/core@7.29.7)(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
-      expo-image-loader: 5.0.0(expo@58.0.10)
+      expo-image-loader: 58.0.3(expo@58.0.10)
 
   expo-keep-awake@58.0.3(expo@58.0.10)(react@18.3.1):
     dependencies:
