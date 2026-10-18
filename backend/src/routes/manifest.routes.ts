@@ -14,6 +14,11 @@ import {
 } from "../services/manifest.service";
 import { ContractService } from "../services/contract.service";
 import { appLogger } from "../middleware/logger";
+import { RATE_LIMIT_CONFIG } from "../config/rateLimit";
+import { createIpRateLimiter } from "../lib/rateLimit";
+
+// Driver links are wallet-less, so per-IP limits are the only brake on token guessing.
+const driverTokenLimiter = createIpRateLimiter(RATE_LIMIT_CONFIG.driverToken);
 
 const manifestBodySchema = z.object({
     driverName: z.string().min(1),
@@ -154,6 +159,7 @@ export function createManifestRouter(
     // POST /trades/:id/manifest/driver/:token/pickup
     router.post(
         "/driver/:token/pickup",
+        driverTokenLimiter,
         async (req: AuthRequest, res: Response, next: NextFunction) => {
             try {
                 const result = await manifestService.confirmDriverPickup(
@@ -174,6 +180,7 @@ export function createManifestRouter(
     // POST /trades/:id/manifest/driver/:token/attest
     router.post(
         "/driver/:token/attest",
+        driverTokenLimiter,
         async (req: AuthRequest, res: Response, next: NextFunction) => {
             const parsed = attestBodySchema.safeParse(req.body);
             if (!parsed.success) {
