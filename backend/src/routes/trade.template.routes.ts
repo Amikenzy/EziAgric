@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextFunction, Response, Router } from "express";
+import { callerAddress } from "../lib/callerAddress";
 import { prisma as defaultPrisma } from "../lib/db";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validateRequest } from "../middleware/validateRequest";
@@ -13,15 +14,6 @@ import {
   templateIdParamSchema,
 } from "../schemas/trade.template.schemas";
 
-function caller(req: AuthRequest, res: Response): string | null {
-  const walletAddress = req.user?.walletAddress?.trim();
-  if (!walletAddress) {
-    res.status(401).json({ error: "Unauthorized" });
-    return null;
-  }
-  return walletAddress;
-}
-
 export function createTradeTemplateRouter(prisma: PrismaClient = defaultPrisma) {
   const router = Router();
   const templates = new TradeTemplateService(prisma);
@@ -31,7 +23,7 @@ export function createTradeTemplateRouter(prisma: PrismaClient = defaultPrisma) 
     authMiddleware,
     validateRequest({ body: createTradeTemplateSchema }),
     async (req: AuthRequest, res: Response, next: NextFunction) => {
-      const userAddress = caller(req, res);
+      const userAddress = callerAddress(req, res);
       if (!userAddress) return;
       try {
         const template = await templates.save(userAddress, req.body);
@@ -43,7 +35,7 @@ export function createTradeTemplateRouter(prisma: PrismaClient = defaultPrisma) 
   );
 
   router.get("/templates", authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userAddress = caller(req, res);
+    const userAddress = callerAddress(req, res);
     if (!userAddress) return;
     try {
       res.status(200).json({ templates: await templates.list(userAddress) });
@@ -57,7 +49,7 @@ export function createTradeTemplateRouter(prisma: PrismaClient = defaultPrisma) 
     authMiddleware,
     validateRequest({ params: templateIdParamSchema }),
     async (req: AuthRequest, res: Response, next: NextFunction) => {
-      const userAddress = caller(req, res);
+      const userAddress = callerAddress(req, res);
       if (!userAddress) return;
       try {
         const result = await templates.createTradeFromTemplate(

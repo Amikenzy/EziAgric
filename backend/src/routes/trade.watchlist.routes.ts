@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextFunction, Response, Router } from "express";
+import { callerAddress } from "../lib/callerAddress";
 import { prisma as defaultPrisma } from "../lib/db";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validateRequest } from "../middleware/validateRequest";
@@ -10,15 +11,6 @@ import {
   WatchTradeAccessDeniedError,
   WatchTradeNotFoundError,
 } from "../services/trade.watchlist.service";
-
-function caller(req: AuthRequest, res: Response): string | null {
-  const walletAddress = req.user?.walletAddress?.trim();
-  if (!walletAddress) {
-    res.status(401).json({ error: "Unauthorized" });
-    return null;
-  }
-  return walletAddress;
-}
 
 function handleWatchError(error: unknown, res: Response, next: NextFunction) {
   if (error instanceof WatchTradeNotFoundError) {
@@ -37,7 +29,7 @@ export function createTradeWatchlistRouter(prisma: PrismaClient = defaultPrisma)
   const watchlist = new TradeWatchlistService(prisma);
 
   router.post("/:id/watch", authMiddleware, validateRequest({ params: tradeIdParamSchema }), async (req: AuthRequest, res, next) => {
-    const userAddress = caller(req, res);
+    const userAddress = callerAddress(req, res);
     if (!userAddress) return;
     try {
       const watch = await watchlist.add(String(req.params.id), userAddress);
@@ -48,7 +40,7 @@ export function createTradeWatchlistRouter(prisma: PrismaClient = defaultPrisma)
   });
 
   router.delete("/:id/watch", authMiddleware, validateRequest({ params: tradeIdParamSchema }), async (req: AuthRequest, res, next) => {
-    const userAddress = caller(req, res);
+    const userAddress = callerAddress(req, res);
     if (!userAddress) return;
     try {
       const result = await watchlist.remove(String(req.params.id), userAddress);
@@ -59,7 +51,7 @@ export function createTradeWatchlistRouter(prisma: PrismaClient = defaultPrisma)
   });
 
   router.get("/watched", authMiddleware, async (req: AuthRequest, res, next) => {
-    const userAddress = caller(req, res);
+    const userAddress = callerAddress(req, res);
     if (!userAddress) return;
     try {
       res.status(200).json({ items: await watchlist.list(userAddress) });
