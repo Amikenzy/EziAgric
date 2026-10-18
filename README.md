@@ -62,6 +62,8 @@ cargo, wasm32 target, stellar CLI), prints the exact install command for anythin
 finishes with one smoke test per stack. Hit something it didn't catch? Open an
 **Onboarding friction** issue.
 
+Setup failing? See [Troubleshooting local setup](docs/troubleshooting-local-setup.md) for fixes to common problems.
+
 ### Frontend setup
 
 1. `cd frontend`
@@ -97,6 +99,21 @@ The backend writes `backend/src/docs/openapi.json` from the YAML spec in non-pro
 1. `cd contracts/amana_escrow`
 2. `cargo build`
 
+## 🧭 Architecture
+
+The system context and the trade lifecycle are diagrams-as-code under
+[`docs/architecture`](docs/architecture/README.md): Mermaid sources committed
+next to their rendered previews, and checked in CI for any `docs/**` change.
+
+[![System context](docs/architecture/rendered/system-context.svg)](docs/architecture/system-context.md)
+
+[![Trade lifecycle](docs/architecture/rendered/trade-lifecycle.svg)](docs/architecture/sequences/trade-lifecycle.md)
+
+If a change adds or removes a component, changes who may call an entry point, or
+changes the order of messages that settle a trade, update the relevant diagram in
+the same pull request — see
+[what counts as arch-affecting](docs/architecture/README.md#what-counts-as-arch-affecting).
+
 ## 🔒 Required PR CI Gates
 
 Amana enforces stack-level CI gates on pull requests through `.github/workflows/ci.yml`.
@@ -116,9 +133,8 @@ For the protected branch (`main`), set these required status checks:
 
 - `Frontend Required Gate`
 - `Backend Required Gate`
+- `Mobile Required Gate`
 - `Contracts Required Gate`
-
----
 
 ---
 
@@ -228,7 +244,7 @@ sequenceDiagram
 
 ### Phase 4: Mainnet & Scale
 
-- [ ] Public pilot program with regional agricultural cooperatives.
+- [ ] Public pilot program with regional agricultural cooperatives. See the [pilot onboarding checklist and tracker](docs/pilot-onboarding.md).
 - [x] Implementation of a "Trust Score" reputation system.
 
 ---
@@ -303,8 +319,6 @@ step-by-step example.
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-// setting up and starting out
 
 ## Handsoff notes
 

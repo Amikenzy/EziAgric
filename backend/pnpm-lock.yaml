@@ -21,8 +21,8 @@ importers:
         specifier: 0.222.0
         version: 0.222.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-zipkin':
-        specifier: 1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.1)
+        specifier: 2.11.0
+        version: 2.11.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/instrumentation':
         specifier: 0.222.0
         version: 0.222.0(@opentelemetry/api@1.9.1)
@@ -36,8 +36,8 @@ importers:
         specifier: 1.30.1
         version: 1.30.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-metrics':
-        specifier: 1.30.1
-        version: 1.30.1(@opentelemetry/api@1.9.1)
+        specifier: 2.11.0
+        version: 2.11.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-node':
         specifier: 0.222.0
         version: 0.222.0(@opentelemetry/api@1.9.1)
@@ -60,20 +60,20 @@ importers:
         specifier: 2.117.2
         version: 2.117.2(@opentelemetry/api@1.9.1)
       '@types/helmet':
-        specifier: 0.0.48
-        version: 0.0.48
+        specifier: 4.0.0
+        version: 4.0.0
       axios:
         specifier: 1.20.0
         version: 1.20.0
       bullmq:
-        specifier: 5.79.2
-        version: 5.79.2
+        specifier: 6.3.11
+        version: 6.3.11(ioredis@6.0.0)
       cors:
         specifier: 2.8.6
         version: 2.8.6
       dotenv:
-        specifier: 17.3.1
-        version: 17.3.1
+        specifier: 18.0.5
+        version: 18.0.5
       express:
         specifier: 5.2.1
         version: 5.2.1
@@ -118,8 +118,8 @@ importers:
         version: 4.6.5
     devDependencies:
       '@eslint/js':
-        specifier: 9.39.4
-        version: 9.39.4
+        specifier: 9.39.5
+        version: 9.39.5
       '@pact-foundation/pact':
         specifier: 17.1.4
         version: 17.1.4
@@ -660,6 +660,10 @@ packages:
     resolution: {integrity: sha512-nE7DEIchvtiFTwBw4Lfbu59PG+kCofhjsKaCWzxTpt4lfRjRMqG6uMBzKXuEcyXhOHoUp9riAm7/aWYGhXZ9cw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@eslint/js@9.39.5':
+    resolution: {integrity: sha512-QywQuszQh77pIXCsq998c8hbhSTI/azTty1Z6N53dmAudKHhy573j3yvRLsX2BSp8YpLtoCEG8E9DJe+8zUh4A==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@eslint/object-schema@2.1.7':
     resolution: {integrity: sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -923,9 +927,6 @@ packages:
   '@inquirer/type@2.0.0':
     resolution: {integrity: sha512-XvJRx+2KR3YXyYtPUUy+qd9i7p+GO9Ko6VIIpWlBrpWwXDv8WLFeHTxz35CfQFUiBMLXlGHhGzys7lqit9gWag==}
     engines: {node: '>=18'}
-
-  '@ioredis/commands@1.5.1':
-    resolution: {integrity: sha512-JH8ZL/ywcJyR9MmJ5BNqZllXNZQqQbnVZOqpPQqE1vHiFgAw4NHbvE0FOduNU8IX9babitBT46571OnPTT0Zcw==}
 
   '@ioredis/commands@2.0.0':
     resolution: {integrity: sha512-vrx0AE/T0h7cRZwfo1M39Cr+ZhZrkf0V8mQN75wucKCxCLD9l/VX6no3gFvrLqD1IlG/1LtzWovqEw3t0Vr9zg==}
@@ -1219,12 +1220,6 @@ packages:
     engines: {node: ^18.19.0 || >=20.6.0}
     peerDependencies:
       '@opentelemetry/api': ^1.3.0
-
-  '@opentelemetry/exporter-zipkin@1.30.1':
-    resolution: {integrity: sha512-6S2QIMJahIquvFaaxmcwpvQQRD/YFaMTNoIxrfPIPOeITN+a8lfEcPDxNxn8JDAaxkg+4EnXhz8upVDYenoQjA==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': ^1.0.0
 
   '@opentelemetry/exporter-zipkin@2.11.0':
     resolution: {integrity: sha512-mFibA45yXLEETIj+VcTVycFFe4R91iD41d+r3CU0f3DDWJCrICiHxUIjmYBTCZIuywXEeNo++2lncQeWnH7lWQ==}
@@ -1572,12 +1567,6 @@ packages:
     peerDependencies:
       '@opentelemetry/api': '>=1.4.0 <1.10.0'
 
-  '@opentelemetry/sdk-metrics@1.30.1':
-    resolution: {integrity: sha512-q9zcZ0Okl8jRgmy7eNW3Ku1XSgg3sDLa5evHZpCwjspw7E8Is4K/haRPDJrBcX3YSn/Y7gUvFnByNYEKQNbNog==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': '>=1.3.0 <1.10.0'
-
   '@opentelemetry/sdk-metrics@2.11.0':
     resolution: {integrity: sha512-7GXXcObyHyDUUSG+L+kJoquty01bzm7ivE7+SSgXXJcHuPzGviptxwARmI2c+bnnxjexGQbJnyNlN8HxBP/Y7A==}
     engines: {node: ^18.19.0 || >=20.6.0}
@@ -1589,12 +1578,6 @@ packages:
     engines: {node: ^18.19.0 || >=20.6.0}
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
-
-  '@opentelemetry/sdk-trace-base@1.30.1':
-    resolution: {integrity: sha512-jVPgBbH1gCy2Lb7X0AVQ8XAfgg0pJ4nvl8/IiQA6nxOsPvS+0zMJaFSs2ltXe0J6C8dqjcnpyqINDJmU30+uOg==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-base@2.11.0':
     resolution: {integrity: sha512-H19x/TX/LZdqiYOjM7fqtSxwlplC5pgelavqbQdHbhdq0q/AI/TGkM2dfGuuynTXmJPeF2HoZVoPDu+TGoW78A==}
@@ -2118,8 +2101,9 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
-  '@types/helmet@0.0.48':
-    resolution: {integrity: sha512-C7MpnvSDrunS1q2Oy1VWCY7CDWHozqSnM8P4tFeRTuzwqni+PYOjEredwcqWG+kLpYcgLsgcY3orHB54gbx2Jw==}
+  '@types/helmet@4.0.0':
+    resolution: {integrity: sha512-ONIn/nSNQA57yRge3oaMQESef/6QhoeX7llWeDli0UZIfz8TQMkfNPTXA8VnnyeA1WUjG2pGqdjEIueYonMdfQ==}
+    deprecated: This is a stub types definition. helmet provides its own type definitions, so you do not need this installed.
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
@@ -2622,12 +2606,21 @@ packages:
     resolution: {integrity: sha512-sWm8iPbqvL9+5SiYxXH73UOkyEbGQg7kyHQmReF89WJHQJw2eV4P/yZ0E+b71cczJ4pPobVhXxgQcmfSTgGHxQ==}
     engines: {node: '>= 0.10.x'}
 
-  bullmq@5.79.2:
-    resolution: {integrity: sha512-FebD+8XCZl/hnS1R4to24L4EAN70XSndKZO0776M36vGRk5MKVhKlNFM8/34zXLXKyYB4QaeIPFhVXSYYGTHpQ==}
-    engines: {node: '>=12.22.0'}
+  bullmq@6.3.11:
+    resolution: {integrity: sha512-ylSY3FYil6E9IjqVtT+WHcZvS1rgTZ0L3Aev62u45NXQFe+H37a1AuC3WDATR7ScNDet1Ah8MnP3lf8XaUbPUw==}
+    engines: {node: '>=14.17.0'}
     peerDependencies:
+      bullmq-otel: '>=2.0.0'
+      ioredis: '>=5.0.0'
+      pg: '>=8.0.0'
       redis: '>=5.0.0'
     peerDependenciesMeta:
+      bullmq-otel:
+        optional: true
+      ioredis:
+        optional: true
+      pg:
+        optional: true
       redis:
         optional: true
 
@@ -2730,10 +2723,6 @@ packages:
     resolution: {integrity: sha512-rwHwUfXL40Chm1r08yrhU3qpUvdVlgkKNeyeGPOxnW8/SyVDvgRaed/Uz54AqWNaTCAThlj6QAs3TZcKI0xDEw==}
     engines: {node: '>=0.10.0'}
 
-  cluster-key-slot@1.1.2:
-    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
-    engines: {node: '>=0.10.0'}
-
   co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
@@ -2812,10 +2801,9 @@ packages:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
 
-  cron-parser@4.9.0:
-    resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
-    engines: {node: '>=12.0.0'}
-    deprecated: v4 is no longer maintained, upgrade to v5
+  cron-parser@5.10.1:
+    resolution: {integrity: sha512-pKRrRagItwk9rGIStcUyMxFX34x56zoX3KDf9HJ4ttwkXIK1qxK63EvXvEDmlxI9AdPJ+Y7TEKRftRlW5eSS7A==}
+    engines: {node: '>=18'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -2948,6 +2936,11 @@ packages:
   dotenv@17.3.1:
     resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
     engines: {node: '>=12'}
+
+  dotenv@18.0.5:
+    resolution: {integrity: sha512-aBrGvt6KhjxbEnatqMWOMidftwsrCiCvqh1yNIGB9QyF0J+VcWkKDMsvYOEm7ZS82oiV+BT1sTOtIlAmUlTpwQ==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   drange@1.1.1:
     resolution: {integrity: sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==}
@@ -3507,10 +3500,6 @@ packages:
     resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
     engines: {node: '>=12'}
 
-  ioredis@5.10.1:
-    resolution: {integrity: sha512-HuEDBTI70aYdx1v6U97SbNx9F1+svQKBDo30o0b9fw055LMepzpOOd0Ccg9Q6tbqmBSJaMuY0fB7yw9/vjBYCA==}
-    engines: {node: '>=12.22.0'}
-
   ioredis@6.0.0:
     resolution: {integrity: sha512-f+Dtubxfpf6KYFq7WVXJoOLn0bk4TJrMrN9SzeE+jrWrCWj7XX3fA6vkryafhADX+GMymRxgDJDOI33COkJc0w==}
     engines: {node: '>=20.0.0'}
@@ -3853,9 +3842,6 @@ packages:
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
 
-  lodash.defaults@4.2.0:
-    resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
-
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
@@ -3865,9 +3851,6 @@ packages:
 
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
-
-  lodash.isarguments@3.1.0:
-    resolution: {integrity: sha512-chi4NHZlZqZD18a0imDHnZPrDeBbTtVN7GXMwuGdRH9qotxAjYs3aVLKc7zNOG9eddR5Ksd8rvFEBc9SsggPpg==}
 
   lodash.isboolean@3.0.3:
     resolution: {integrity: sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg==}
@@ -4018,8 +4001,8 @@ packages:
     resolution: {integrity: sha512-4kmO/MdyUIkLIvTPr8VHLil4AtoKIoniWPIEk5+CDy0xnWC84azhSFmuJ7PxZdsYtiP5kEeQsORAVIeMgxT+Hw==}
     hasBin: true
 
-  msgpackr@2.0.4:
-    resolution: {integrity: sha512-o1C5KRmuRt+apqMr1HuGSqWStZoRBUpEsCsl15uM9VdAF1qHLtvMOU2En747EnTyEl6c4pzPewRMFF31s1CNbA==}
+  msgpackr@2.1.0:
+    resolution: {integrity: sha512-p/pBCVO63CsvvpkomUnNNag6+n38rULuDA6HHe70o2gtC8ODI52foF/4ko2qQcp6OiErJXTmrZeXmsGGHsIQNQ==}
 
   multer@2.4.0:
     resolution: {integrity: sha512-7dqa0ZcFfzbefdTuIkzOSMvZWC0J7FLqBOjJUZvDCXShIURWKxAyTT1wHhnE5q19c7jOJf43IYYKjBmZVZmvhg==}
@@ -4458,10 +4441,6 @@ packages:
 
   redis-errors@1.2.0:
     resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==}
-    engines: {node: '>=4'}
-
-  redis-parser@3.0.0:
-    resolution: {integrity: sha512-DJnGAeenTdpMEH6uAJRK/uiyEIH9WVsUmoLwzudwGJUwZPp80PDBWPHXSAGNPwNvIXAbe7MSUB1zQFugFml66A==}
     engines: {node: '>=4'}
 
   remeda@2.33.4:
@@ -5532,6 +5511,8 @@ snapshots:
 
   '@eslint/js@9.39.4': {}
 
+  '@eslint/js@9.39.5': {}
+
   '@eslint/object-schema@2.1.7': {}
 
   '@eslint/plugin-kit@0.4.1':
@@ -5772,8 +5753,6 @@ snapshots:
   '@inquirer/type@2.0.0':
     dependencies:
       mute-stream: 1.0.0
-
-  '@ioredis/commands@1.5.1': {}
 
   '@ioredis/commands@2.0.0': {}
 
@@ -6218,14 +6197,6 @@ snapshots:
       '@opentelemetry/otlp-exporter-base': 0.222.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/otlp-transformer': 0.222.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-trace': 2.11.0(@opentelemetry/api@1.9.1)
-
-  '@opentelemetry/exporter-zipkin@1.30.1(@opentelemetry/api@1.9.1)':
-    dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/semantic-conventions': 1.28.0
 
   '@opentelemetry/exporter-zipkin@2.11.0(@opentelemetry/api@1.9.1)':
     dependencies:
@@ -6689,12 +6660,6 @@ snapshots:
       '@opentelemetry/resources': 2.11.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/semantic-conventions': 1.43.0
 
-  '@opentelemetry/sdk-metrics@1.30.1(@opentelemetry/api@1.9.1)':
-    dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.1)
-
   '@opentelemetry/sdk-metrics@2.11.0(@opentelemetry/api@1.9.1)':
     dependencies:
       '@opentelemetry/api': 1.9.1
@@ -6733,13 +6698,6 @@ snapshots:
       '@opentelemetry/semantic-conventions': 1.43.0
     transitivePeerDependencies:
       - supports-color
-
-  '@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1)':
-    dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/semantic-conventions': 1.28.0
 
   '@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1)':
     dependencies:
@@ -7335,9 +7293,9 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
-  '@types/helmet@0.0.48':
+  '@types/helmet@4.0.0':
     dependencies:
-      '@types/express': 5.0.6
+      helmet: 8.3.0
 
   '@types/http-errors@2.0.5': {}
 
@@ -7933,16 +7891,15 @@ snapshots:
       hexer: 1.5.0
       xtend: 4.0.2
 
-  bullmq@5.79.2:
+  bullmq@6.3.11(ioredis@6.0.0):
     dependencies:
-      cron-parser: 4.9.0
-      ioredis: 5.10.1
-      msgpackr: 2.0.4
+      cron-parser: 5.10.1
+      msgpackr: 2.1.0
       node-abort-controller: 3.1.1
       semver: 7.8.5
       tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
+    optionalDependencies:
+      ioredis: 6.0.0
 
   busboy@1.6.0:
     dependencies:
@@ -8036,8 +7993,6 @@ snapshots:
 
   cluster-key-slot@1.1.1: {}
 
-  cluster-key-slot@1.1.2: {}
-
   co@4.6.0: {}
 
   collect-v8-coverage@1.0.3: {}
@@ -8089,7 +8044,7 @@ snapshots:
       object-assign: 4.1.1
       vary: 1.1.2
 
-  cron-parser@4.9.0:
+  cron-parser@5.10.1:
     dependencies:
       luxon: 3.7.2
 
@@ -8196,6 +8151,8 @@ snapshots:
   diff-match-patch@1.0.5: {}
 
   dotenv@17.3.1: {}
+
+  dotenv@18.0.5: {}
 
   drange@1.1.1: {}
 
@@ -8837,20 +8794,6 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  ioredis@5.10.1:
-    dependencies:
-      '@ioredis/commands': 1.5.1
-      cluster-key-slot: 1.1.2
-      debug: 4.4.3(supports-color@10.2.2)
-      denque: 2.1.0
-      lodash.defaults: 4.2.0
-      lodash.isarguments: 3.1.0
-      redis-errors: 1.2.0
-      redis-parser: 3.0.0
-      standard-as-callback: 2.1.0
-    transitivePeerDependencies:
-      - supports-color
-
   ioredis@6.0.0:
     dependencies:
       '@ioredis/commands': 2.0.0
@@ -9401,15 +9344,11 @@ snapshots:
 
   lodash.camelcase@4.3.0: {}
 
-  lodash.defaults@4.2.0: {}
-
   lodash.get@4.4.2: {}
 
   lodash.groupby@4.6.0: {}
 
   lodash.includes@4.3.0: {}
-
-  lodash.isarguments@3.1.0: {}
 
   lodash.isboolean@3.0.3: {}
 
@@ -9523,7 +9462,7 @@ snapshots:
       '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.4
     optional: true
 
-  msgpackr@2.0.4:
+  msgpackr@2.1.0:
     optionalDependencies:
       msgpackr-extract: 3.0.4
 
@@ -9975,10 +9914,6 @@ snapshots:
 
   redis-errors@1.2.0: {}
 
-  redis-parser@3.0.0:
-    dependencies:
-      redis-errors: 1.2.0
-
   remeda@2.33.4: {}
 
   require-directory@2.1.1: {}
@@ -10026,7 +9961,7 @@ snapshots:
 
   rxjs@7.8.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   safe-buffer@5.2.1: {}
 

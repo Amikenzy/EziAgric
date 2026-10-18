@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { prisma } from '../lib/db';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validateRequest';
+import { appLogger } from '../middleware/logger';
 
 const router = Router();
 
@@ -90,7 +91,7 @@ router.post(
         createdAt: webhook.createdAt,
       });
     } catch (error) {
-      console.error('Error creating webhook:', error);
+      appLogger.error({ err: error }, 'Error creating webhook');
       res.status(500).json({ error: 'Failed to create webhook' });
     }
   }
@@ -125,7 +126,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({ webhooks });
   } catch (error) {
-    console.error('Error listing webhooks:', error);
+    appLogger.error({ err: error }, 'Error listing webhooks');
     res.status(500).json({ error: 'Failed to list webhooks' });
   }
 });
@@ -169,7 +170,7 @@ router.delete(
 
       res.status(200).json({ message: 'Webhook deleted successfully' });
     } catch (error) {
-      console.error('Error deleting webhook:', error);
+      appLogger.error({ err: error }, 'Error deleting webhook');
       res.status(500).json({ error: 'Failed to delete webhook' });
     }
   }

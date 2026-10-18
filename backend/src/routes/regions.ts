@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { validateRequest } from '../middleware/validateRequest';
 import { paginateWithCursor, InvalidCursorError } from '../lib/cursorPagination';
+import { prisma } from '../lib/db';
+import { appLogger } from '../middleware/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 const regionsQuerySchema = z.object({
   state: z.string().optional(),
@@ -22,11 +22,7 @@ const regionsQuerySchema = z.object({
  */
 router.get('/', validateRequest({ query: regionsQuerySchema }), async (req: Request, res: Response) => {
   try {
-    const { state, cursor, limit } = req.query as unknown as {
-      state?: string;
-      cursor?: string;
-      limit: number;
-    };
+    const { state, cursor, limit } = regionsQuerySchema.parse(req.query);
     const stateFilter = state?.trim();
 
     const where = stateFilter
@@ -56,6 +52,7 @@ router.get('/', validateRequest({ query: regionsQuerySchema }), async (req: Requ
       res.status(400).json({ error: error.message });
       return;
     }
+    appLogger.error({ err: error, state: req.query.state }, 'Failed to fetch regions');
     res.status(500).json({ error: 'Failed to fetch regions' });
   }
 });

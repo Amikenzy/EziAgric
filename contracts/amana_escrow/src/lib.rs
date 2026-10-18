@@ -116,6 +116,29 @@ pub const MIN_FEE_BPS: u32 = 1;
 /// Maximum allowed platform fee in basis points (5%).
 pub const MAX_FEE_BPS: u32 = 500;
 
+/// Maximum number of trade ids a single `get_trades` call accepts (#351).
+///
+/// Dashboards page 20 trades at a time, so 50 covers a full page plus a
+/// prefetch in one simulation while keeping the read footprint — and the
+/// response size — bounded. Larger batches are rejected with `BATCH_TOO_LARGE`
+/// rather than silently truncated, so a caller can never mistake a partial
+/// answer for a complete one.
+pub const MAX_BATCH_TRADES: u32 = 50;
+
+/// How long a seller has to accept the pro-rata settlement proposed by
+/// `confirm_partial_delivery` before either party may escalate the trade to a
+/// dispute (#349). Three days.
+///
+/// Without a deadline a buyer could leave a proposal — and the escrow behind
+/// it — pending forever; an unaccepted proposal must always end in settlement
+/// or dispute.
+pub const PARTIAL_DELIVERY_ACCEPT_WINDOW_SECS: u64 = 3 * 24 * 60 * 60;
+
+/// Reason hash recorded when a partial-delivery settlement is escalated to a
+/// dispute (#349). A short machine-readable token, not prose, so it fits the
+/// `reason_hash` field the mediator tooling already decodes.
+pub const PARTIAL_DELIVERY_ESCALATION_REASON: &str = "PARTIAL_DELIVERY_NOT_ACCEPTED";
+
 fn checked_fee_amount(amount: i128, fee_bps: u32) -> i128 {
     amount
         .checked_mul(fee_bps as i128)
@@ -624,6 +647,10 @@ pub mod trade_errors {
     pub const AMENDMENT_INVALID_AMOUNT: &str = "AMENDMENT_INVALID_AMOUNT";
     /// Proposed deadline is not in the future.
     pub const AMENDMENT_INVALID_DEADLINE: &str = "AMENDMENT_INVALID_DEADLINE";
+    /// `get_trades` was called with more than `MAX_BATCH_TRADES` ids (#351).
+    /// Raised as a panic with this token so a client can tell "too many ids"
+    /// apart from any other failure and page its request down.
+    pub const BATCH_TOO_LARGE: &str = "BATCH_TOO_LARGE";
 }
 
 /// Emitted when the admin performs a partial or full clawback on an escrowed trade.
@@ -656,6 +683,28 @@ pub struct ClawbackExecutedEvent {
 // ---------------------------------------------------------------------------
 // Timelock events (Issue #189)
 // ---------------------------------------------------------------------------
+
+/// Emitted when the buyer confirms that only part of a shipment arrived and
+/// proposes the pro-rata split of the escrow for it (#349).
+///
+/// The amounts are computed once, at confirmation time, and frozen in
+/// `DataKey::PartialDeliverySettlement(trade_id)`: the seller either accepts
+/// exactly these amounts within the acceptance window or the trade escalates
+/// to a dispute. They always sum to the escrowed amount, so no dust is
+/// stranded whichever way the settlement ends.
+#[contractevent(topics = ["PARTDL"])]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PartialDeliveryConfirmedEvent {
+    pub trade_id: u64,
+    /// Delivered share of the escrow, in basis points (0–10 000).
+    pub delivered_bps: u32,
+    /// Net amount released to the seller once the seller accepts.
+    pub seller_amount: i128,
+    /// Amount refunded to the buyer.
+    pub buyer_refund: i128,
+    /// Platform fee, charged on the delivered portion only.
+    pub fee_amount: i128,
+}
 
 #[contractevent(topics = ["TLKQUE"])]
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1007,6 +1056,42 @@ pub enum DataKey {
     /// Pending `TradeAmendment` proposed by one party and awaiting the
     /// counter-party's signature. Only meaningful while the trade is `Created`.
     PendingAmendment(u64),
+    /// Pro-rata partial-delivery settlement proposed by the buyer through
+    /// `confirm_partial_delivery` and awaiting the seller's acceptance (#349).
+    /// Absent means no settlement is pending. Appended last so the XDR encoding
+    /// of every pre-existing variant is unchanged.
+    PartialDeliverySettlement(u64),
+}
+
+/// Pro-rata split of a partially delivered shipment (#349).
+///
+/// Persisted under [`DataKey::PartialDeliverySettlement`] so the numbers the
+/// seller is asked to accept are the numbers that get paid: neither the fee
+/// rate nor the trade's `Loss_Ratio` is re-read at acceptance time, and a fee
+/// change after confirmation cannot move them.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PartialDeliverySettlement {
+    pub trade_id: u64,
+    /// Delivered share of the escrow, in basis points (0–10 000).
+    pub delivered_bps: u32,
+    /// `escrow * delivered_bps / 10_000` — the fee-bearing delivered part.
+    pub delivered_amount: i128,
+    /// `escrow - delivered_amount`; absorbs the integer-division remainder.
+    pub undelivered_amount: i128,
+    /// The seller's share of the undelivered remainder, deducted from the
+    /// delivered part so the trade's `Loss_Ratio` is honoured without dust.
+    pub seller_loss_amount: i128,
+    /// Paid to the seller on acceptance.
+    pub seller_amount: i128,
+    /// Refunded to the buyer on acceptance.
+    pub buyer_refund: i128,
+    /// Accrued to platform fees on acceptance.
+    pub fee_amount: i128,
+    pub confirmed_at: u64,
+    /// Last ledger time at which the seller may accept; after this either
+    /// party may escalate to a dispute.
+    pub accept_by: u64,
 }
 
 /// New terms proposed for an unfunded trade. Applied atomically to the trade
@@ -2920,6 +3005,11 @@ impl EscrowContract {
         Self::update_release_sequence(env, trade, |sequence, at| {
             sequence.cancelled_at = Some(at);
         });
+        // A trade that leaves the funded state through another path can no
+        // longer settle a pending partial-delivery proposal (#349).
+        env.storage()
+            .persistent()
+            .remove(&DataKey::PartialDeliverySettlement(trade.trade_id));
 
         Self::record_trade_event(
             env,
@@ -2945,6 +3035,15 @@ impl EscrowContract {
             matches!(trade.status, TradeStatus::Funded),
             "Trade must be funded"
         );
+        // A trade with a pending partial-delivery settlement must settle or
+        // escalate that proposal first (#349); otherwise the frozen split would
+        // be silently superseded by a full release.
+        assert!(
+            !env.storage()
+                .persistent()
+                .has(&DataKey::PartialDeliverySettlement(trade_id)),
+            "partial delivery settlement pending; accept or escalate it first"
+        );
         let now = env.ledger().timestamp();
         trade.status = TradeStatus::Delivered;
         trade.delivered_at = Some(now);
@@ -2965,6 +3064,292 @@ impl EscrowContract {
             delivered_at: now,
         }
         .publish(&env);
+    }
+
+    // -----------------------------------------------------------------------
+    // Partial delivery with pro-rata settlement (#349)
+    // -----------------------------------------------------------------------
+
+    /// The pro-rata split of a partially delivered shipment.
+    ///
+    /// Pure arithmetic so the same numbers can be recomputed by a client for
+    /// comparison. `escrow` is the trade's escrowed amount; every returned
+    /// amount is non-negative and `seller_amount + buyer_refund + fee_amount`
+    /// always equals `escrow`.
+    fn compute_partial_settlement(
+        trade: &Trade,
+        delivered_bps: u32,
+        fee_bps: u32,
+        now: u64,
+    ) -> PartialDeliverySettlement {
+        let escrow = trade.amount;
+        let delivered_amount = escrow
+            .checked_mul(delivered_bps as i128)
+            .expect("partial delivery amount overflow")
+            / BPS_DIVISOR;
+        // The remainder keeps the integer-division leftover, so no dust is
+        // created however the escrow divides.
+        let undelivered_amount = escrow - delivered_amount;
+        // The platform fee is charged on the delivered portion only: the buyer
+        // pays no fee on goods that never arrived.
+        let fee_amount = checked_fee_amount(delivered_amount, fee_bps);
+        // The undelivered remainder is a loss shared by `Loss_Ratio`. The
+        // seller's share is paid out of the delivered part and is capped by it:
+        // a party cannot compensate more than it is being paid, and with
+        // `delivered_bps == 0` the buyer recovers the whole escrow.
+        let seller_loss_amount = undelivered_amount
+            .checked_mul(trade.seller_loss_bps as i128)
+            .expect("partial delivery loss overflow")
+            / BPS_DIVISOR;
+        let seller_loss_amount = seller_loss_amount.min((delivered_amount - fee_amount).max(0));
+        let seller_amount = delivered_amount - fee_amount - seller_loss_amount;
+        let buyer_refund = undelivered_amount + seller_loss_amount;
+
+        assert!(
+            seller_amount >= 0 && buyer_refund >= 0 && fee_amount >= 0,
+            "partial delivery: negative amount"
+        );
+        assert!(
+            seller_amount + buyer_refund + fee_amount == escrow,
+            "partial delivery: cNGN conservation invariant violated"
+        );
+
+        PartialDeliverySettlement {
+            trade_id: trade.trade_id,
+            delivered_bps,
+            delivered_amount,
+            undelivered_amount,
+            seller_loss_amount,
+            seller_amount,
+            buyer_refund,
+            fee_amount,
+            confirmed_at: now,
+            accept_by: now + PARTIAL_DELIVERY_ACCEPT_WINDOW_SECS,
+        }
+    }
+
+    /// The partial-delivery settlement pending for `trade_id`.
+    ///
+    /// Panics when no settlement is pending: every caller is on a path where
+    /// the settlement must exist (accept, escalate), so a missing record means
+    /// the trade state is inconsistent.
+    fn load_partial_settlement(env: &Env, trade_id: u64) -> PartialDeliverySettlement {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PartialDeliverySettlement(trade_id))
+            .expect("no pending partial delivery settlement")
+    }
+
+    /// Buyer confirms that only `delivered_bps` of the shipment (in basis points
+    /// of the escrowed value) arrived, and proposes the pro-rata settlement for
+    /// it (#349).
+    ///
+    /// `delivered_bps == 10_000` is a full delivery (prefer `confirm_delivery`
+    /// + `release_funds`), `1` means a hundredth of a percent arrived, and `0`
+    /// means nothing arrived, in which case the buyer recovers the whole
+    /// escrow. The split is computed once and stored, so `fee_bps` and
+    /// `Loss_Ratio` are not re-read at acceptance time and a fee change after
+    /// confirmation cannot move the amounts the seller was shown.
+    ///
+    /// No funds move here. The seller accepts with `accept_partial_delivery`
+    /// inside the [`PARTIAL_DELIVERY_ACCEPT_WINDOW_SECS`] window; afterwards
+    /// either party may call `escalate_partial_delivery` to hand the trade to
+    /// the existing dispute flow. Emits `PARTDL`.
+    pub fn confirm_partial_delivery(env: Env, trade_id: u64, delivered_bps: u32) {
+        Self::assert_not_paused(&env);
+        let key = DataKey::Trade(trade_id);
+        let mut trade: Trade = Self::load_trade(&env, &key);
+        trade.buyer.require_auth();
+        assert!(
+            matches!(trade.status, TradeStatus::Funded),
+            "Trade must be funded"
+        );
+        assert!(
+            delivered_bps <= BPS_DIVISOR as u32,
+            "delivered_bps must be between 0 and 10 000"
+        );
+        assert!(
+            !env.storage()
+                .persistent()
+                .has(&DataKey::PartialDeliverySettlement(trade_id)),
+            "partial delivery settlement already pending"
+        );
+
+        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(0);
+        let now = env.ledger().timestamp();
+        let settlement = Self::compute_partial_settlement(&trade, delivered_bps, fee_bps, now);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PartialDeliverySettlement(trade_id), &settlement);
+
+        trade.updated_at = now;
+        Self::save_trade(&env, &key, &trade);
+        Self::record_trade_event(
+            &env,
+            trade_id,
+            "partial_delivery_confirmed",
+            trade.buyer.clone(),
+            "pro-rata partial delivery proposed",
+        );
+        PartialDeliveryConfirmedEvent {
+            trade_id,
+            delivered_bps,
+            seller_amount: settlement.seller_amount,
+            buyer_refund: settlement.buyer_refund,
+            fee_amount: settlement.fee_amount,
+        }
+        .publish(&env);
+    }
+
+    /// Seller accepts the pro-rata settlement proposed by
+    /// `confirm_partial_delivery`, releasing it (#349).
+    ///
+    /// The seller's share of the net delivered amount goes to the seller, the
+    /// undelivered value plus the seller's share of the loss goes back to the
+    /// buyer, and the fee on the delivered portion is accrued — the three always
+    /// sum to the escrowed amount, so nothing is stranded. Must be called inside
+    /// the acceptance window; after it, only `escalate_partial_delivery` applies.
+    /// Emits `RELSD`.
+    pub fn accept_partial_delivery(env: Env, trade_id: u64) {
+        Self::assert_not_paused(&env);
+        let key = DataKey::Trade(trade_id);
+        let mut trade: Trade = Self::load_trade(&env, &key);
+        trade.seller.require_auth();
+        assert!(
+            matches!(trade.status, TradeStatus::Funded),
+            "Trade must be funded"
+        );
+        let settlement = Self::load_partial_settlement(&env, trade_id);
+        let now = env.ledger().timestamp();
+        assert!(
+            now <= settlement.accept_by,
+            "partial delivery acceptance window has closed"
+        );
+
+        let token_client = token::Client::new(&env, &trade.token);
+        if settlement.seller_amount > 0 {
+            token_client.transfer(
+                &env.current_contract_address(),
+                &trade.seller,
+                &settlement.seller_amount,
+            );
+        }
+        if settlement.buyer_refund > 0 {
+            token_client.transfer(
+                &env.current_contract_address(),
+                &trade.buyer,
+                &settlement.buyer_refund,
+            );
+        }
+        if settlement.fee_amount > 0 {
+            let accrued_fees: i128 = env
+                .storage()
+                .instance()
+                .get(&DataKey::AccruedFees)
+                .unwrap_or(0);
+            env.storage().instance().set(
+                &DataKey::AccruedFees,
+                &(accrued_fees + settlement.fee_amount),
+            );
+        }
+
+        trade.status = TradeStatus::Completed;
+        trade.delivered_at = Some(now);
+        trade.updated_at = now;
+        Self::save_trade(&env, &key, &trade);
+        env.storage()
+            .persistent()
+            .remove(&DataKey::PartialDeliverySettlement(trade_id));
+        Self::update_release_sequence(&env, &trade, |sequence, at| {
+            sequence.delivered_at = Some(at);
+            sequence.released_at = Some(at);
+        });
+        Self::record_trade_event(
+            &env,
+            trade_id,
+            "released",
+            trade.seller.clone(),
+            "partial delivery settled pro-rata",
+        );
+        FundsReleasedEvent {
+            trade_id,
+            seller_amount: settlement.seller_amount,
+            fee_amount: settlement.fee_amount,
+        }
+        .publish(&env);
+    }
+
+    /// Escalate an unaccepted partial-delivery settlement to a dispute (#349).
+    ///
+    /// Either party may call this once the acceptance window has closed. The
+    /// proposal is discarded — no funds ever moved for it — and the trade enters
+    /// the existing dispute flow with the full escrow still in the contract, so
+    /// an offer the seller will not accept can never leave the escrow in limbo.
+    /// Emits `DISINI`.
+    pub fn escalate_partial_delivery(env: Env, trade_id: u64, caller: Address) {
+        Self::assert_not_paused(&env);
+        caller.require_auth();
+        let key = DataKey::Trade(trade_id);
+        let mut trade: Trade = Self::load_trade(&env, &key);
+        let settlement = Self::load_partial_settlement(&env, trade_id);
+        assert!(
+            caller == trade.buyer || caller == trade.seller,
+            "Only a trade party can escalate a partial delivery"
+        );
+        assert!(
+            matches!(trade.status, TradeStatus::Funded),
+            "Trade must be funded"
+        );
+        let now = env.ledger().timestamp();
+        assert!(
+            now > settlement.accept_by,
+            "partial delivery acceptance window is still open"
+        );
+
+        env.storage()
+            .persistent()
+            .remove(&DataKey::PartialDeliverySettlement(trade_id));
+
+        let reason_hash = String::from_str(&env, PARTIAL_DELIVERY_ESCALATION_REASON);
+        env.storage().persistent().set(
+            &DataKey::DisputeData(trade_id),
+            &DisputeRecord {
+                initiator: caller.clone(),
+                reason_hash: reason_hash.clone(),
+                disputed_at: now,
+            },
+        );
+        trade.status = TradeStatus::Disputed;
+        trade.updated_at = now;
+        Self::save_trade(&env, &key, &trade);
+        Self::update_release_sequence(&env, &trade, |sequence, at| {
+            sequence.disputed_at = Some(at);
+        });
+        let total_disputes: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::TotalDisputes)
+            .unwrap_or(0);
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalDisputes, &(total_disputes + 1));
+        DisputeInitiatedEvent {
+            trade_id,
+            initiator: caller,
+            reason_hash,
+        }
+        .publish(&env);
+    }
+
+    /// The partial-delivery settlement proposed for `trade_id`, if any (#349).
+    ///
+    /// `None` once the proposal has been accepted, escalated or the trade left
+    /// the funded state some other way.
+    pub fn get_partial_delivery(env: Env, trade_id: u64) -> Option<PartialDeliverySettlement> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PartialDeliverySettlement(trade_id))
     }
 
     pub fn release_funds(env: Env, trade_id: u64, caller: Address) {
@@ -3913,6 +4298,38 @@ impl EscrowContract {
     // -----------------------------------------------------------------------
     // Views
     // -----------------------------------------------------------------------
+
+    /// Read many trades in one call, in the same order as `ids` (#351).
+    ///
+    /// Dashboards and the event listener rendered a page by issuing one
+    /// `get_trade` simulation per row; this returns the same data from a single
+    /// simulation, so a 20-row page costs one round-trip instead of 20.
+    ///
+    /// Ids that do not exist yield `None` rather than panicking — a page built
+    /// from a slightly stale index still renders, and gaps are obvious to the
+    /// caller. Batches longer than [`MAX_BATCH_TRADES`] are rejected with
+    /// `BATCH_TOO_LARGE`: the cap keeps one call's read footprint bounded, and
+    /// rejecting (rather than truncating) means a caller never gets a silently
+    /// incomplete answer.
+    pub fn get_trades(env: Env, ids: Vec<u64>) -> Vec<Option<Trade>> {
+        assert!(
+            ids.len() <= MAX_BATCH_TRADES,
+            "{}",
+            trade_errors::BATCH_TOO_LARGE
+        );
+
+        let mut trades: Vec<Option<Trade>> = Vec::new(&env);
+        for id in ids.iter() {
+            let data: Option<TradeData> = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Trade(id));
+            trades.push_back(data.map(|stored| match stored {
+                TradeData::V0(trade) => trade,
+            }));
+        }
+        trades
+    }
 
     pub fn get_trade(env: Env, trade_id: u64) -> Trade {
         let key = DataKey::Trade(trade_id);
