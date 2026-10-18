@@ -95,18 +95,25 @@ export class TradeExpiryService {
   }
 
   /** Returns trades that have been marked EXPIRED but not yet refunded on-chain. */
-  async getPendingRefunds(limit = 50) {
-    return this.db.trade.findMany({
-      where: { status: TradeStatus.EXPIRED },
-      take: limit,
-      orderBy: { expiredAt: 'asc' },
-      select: {
-        tradeId: true,
-        buyerAddress: true,
-        amountUsdc: true,
-        expiredAt: true,
-      },
-    });
+  async getPendingRefunds(page = 1, limit = 50) {
+    const skip = (page - 1) * limit;
+    const where = { status: TradeStatus.EXPIRED };
+    const [items, total] = await Promise.all([
+      this.db.trade.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { expiredAt: 'asc' },
+        select: {
+          tradeId: true,
+          buyerAddress: true,
+          amountUsdc: true,
+          expiredAt: true,
+        },
+      }),
+      this.db.trade.count({ where }),
+    ]);
+    return { items, total, page, limit };
   }
 }
 
