@@ -10,6 +10,7 @@ import {
 } from "../services/trade.template.service";
 import {
   createTradeTemplateSchema,
+  listTradeTemplatesQuerySchema,
   templateIdParamSchema,
 } from "../schemas/trade.template.schemas";
 
@@ -42,15 +43,21 @@ export function createTradeTemplateRouter(prisma: PrismaClient = defaultPrisma) 
     },
   );
 
-  router.get("/templates", authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userAddress = caller(req, res);
-    if (!userAddress) return;
-    try {
-      res.status(200).json({ templates: await templates.list(userAddress) });
-    } catch (error) {
-      next(error);
-    }
-  });
+  router.get(
+    "/templates",
+    authMiddleware,
+    validateRequest({ query: listTradeTemplatesQuerySchema }),
+    async (req: AuthRequest, res: Response, next: NextFunction) => {
+      const userAddress = caller(req, res);
+      if (!userAddress) return;
+      try {
+        const { page, limit } = req.query as unknown as { page: number; limit: number };
+        res.status(200).json({ templates: await templates.list(userAddress, { page, limit }) });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
 
   router.post(
     "/from-template/:templateId",
