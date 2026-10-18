@@ -1,9 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/db';
 import { appLogger } from '../middleware/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /regions
