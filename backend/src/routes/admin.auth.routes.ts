@@ -10,6 +10,7 @@ import { RATE_LIMIT_CONFIG } from "../config/rateLimit";
 import { runtimeEnvValue } from "../config/env";
 import { prisma } from "../lib/db";
 import { csrfToken } from "../middleware/csrf.middleware";
+import { appLogger } from "../middleware/logger";
 
 function toIso(seconds: number | undefined): string | null {
   return typeof seconds === "number"
@@ -84,7 +85,7 @@ export function createAdminAuthRouter(): Router {
           ipClass: ctx.ipClass,
         });
       } catch (error) {
-        console.error("ADMIN STEP-UP ERROR:", error);
+        appLogger.error({ error }, "ADMIN STEP-UP ERROR");
         res.status(500).json({ error: "Failed to issue device-bound admin session" });
       }
     },
@@ -112,7 +113,7 @@ export function createAdminAuthRouter(): Router {
           })),
         });
       } catch (error) {
-        console.error("ADMIN SESSIONS LIST ERROR:", error);
+        appLogger.error({ error }, "ADMIN SESSIONS LIST ERROR");
         res.status(500).json({ error: "Failed to list admin sessions" });
       }
     },
@@ -167,7 +168,7 @@ export function createAdminAuthRouter(): Router {
           revokedAt: new Date().toISOString(),
         });
       } catch (error) {
-        console.error("REVOKE HANDLER ERROR:", error);
+        appLogger.error({ error }, "REVOKE HANDLER ERROR");
         res.status(500).json({ error: "Failed to revoke admin session" });
       }
     },
@@ -209,7 +210,7 @@ export function createAdminAuthRouter(): Router {
           revokedAt: new Date().toISOString(),
         });
       } catch (error) {
-        console.error("REVOKE ALL HANDLER ERROR:", error);
+        appLogger.error({ error }, "REVOKE ALL HANDLER ERROR");
         res.status(500).json({ error: "Failed to revoke sessions" });
       }
     },
