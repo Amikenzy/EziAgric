@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { sorobanAdminService } from "../services/sorobanAdmin.service";
 import { validateAdminReason } from "../lib/adminReason";
 import { appLogger } from "../middleware/logger";
-
-const prisma = new PrismaClient();
+import { prisma } from "../lib/db";
 
 export const getStreamRemaining = async (req: Request, res: Response): Promise<void> => {
   try {

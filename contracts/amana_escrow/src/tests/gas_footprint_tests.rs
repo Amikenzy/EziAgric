@@ -424,4 +424,67 @@ mod gas_footprint_tests {
             "rent formula drifted: {one_byte_xlm} XLM/day per byte"
         );
     }
+
+    // Issue #351 — `get_trades` batch read footprint.
+
+    /// Ceiling for one full-cap batch read of `MAX_BATCH_TRADES` trades.
+    ///
+    /// Deliberately loose: the interesting assertion is the comparison with N
+    /// single reads below, and a loose absolute ceiling only catches a per-id
+    /// cost that stops being linear (a re-read of the whole map, say). The
+    /// numbers and the re-baselining policy live in `docs/gas-estimation.md`.
+    const BASELINE_BATCH_GET_TRADES_CPU: u64 = 20_000_000;
+    const BASELINE_BATCH_GET_TRADES_MEM: u64 = 10_000_000;
+
+    #[test]
+    fn test_gas_batch_get_trades_replaces_n_round_trips() {
+        let ctx = Ctx::new(1_000);
+        let client = ctx.client();
+
+        // One full-cap batch: the worst case a dashboard can ask for.
+        let mut ids = soroban_sdk::Vec::new(&ctx.env);
+        while ids.len() < crate::MAX_BATCH_TRADES {
+            let trade_id = client.create_trade(
+                &ctx.buyer,
+                &ctx.seller,
+                &10_i128,
+                &5000_u32,
+                &5000_u32,
+                &None,
+            );
+            client.deposit(&trade_id);
+            ids.push_back(trade_id);
+        }
+
+        let batch = ctx.measure(|| {
+            let trades = client.get_trades(&ids);
+            assert_eq!(trades.len(), crate::MAX_BATCH_TRADES);
+        });
+        batch.assert_under(
+            "get_trades(50)",
+            BASELINE_BATCH_GET_TRADES_CPU,
+            BASELINE_BATCH_GET_TRADES_MEM,
+        );
+
+        let singles = ctx.measure(|| {
+            for id in ids.iter() {
+                let _ = client.get_trade(&id);
+            }
+        });
+
+        assert!(
+            batch.cpu < singles.cpu,
+            "one batch read must cost less CPU than {} single reads: batch={} singles={}",
+            crate::MAX_BATCH_TRADES,
+            batch.cpu,
+            singles.cpu
+        );
+        assert!(
+            batch.mem < singles.mem,
+            "one batch read must use less memory than {} single reads: batch={} singles={}",
+            crate::MAX_BATCH_TRADES,
+            batch.mem,
+            singles.mem
+        );
+    }
 }

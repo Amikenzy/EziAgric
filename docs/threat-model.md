@@ -310,6 +310,103 @@ Created → Funded → Delivered → Completed
 
 ---
 
+### 3.5 Wallet-less Driver Links
+
+Drivers have no Stellar wallet or Amana account. The seller issues a link (`POST /trades/:id/manifest/driver-link`) whose token is then used unauthenticated on `POST /trades/:id/manifest/driver/:token/pickup` and `.../attest`. The token is therefore a bearer credential, and it is delivered over SMS to a phone number that is stored encrypted at rest.
+
+---
+
+#### TH-L-01 — Driver Token Leakage (SMS, Logs, Referer)
+
+| Field | Detail |
+|---|---|
+| **Target** | Driver / Trade integrity |
+| **Vector** | The token sits in the URL path. It can be read from the SMS by anyone with access to the handset or a forwarded message, captured in reverse-proxy or access logs, or leaked via the `Referer` header from the driver page to third-party assets. |
+| **Impact** | Any holder of the token can record a pickup or attest delivery in the driver's name. |
+| **Likelihood** | High — SMS is not an encrypted channel for the recipient's device. |
+
+**Current Controls:**
+- Driver phone and name are encrypted at rest (`EncryptionService`, keyed by trade id).
+
+**Recommended Mitigations:**
+- Store only a SHA-256 hash of the token, never the raw value.
+- Make tokens single-use for the pickup step and short-lived (e.g., expire at the earlier of delivery window end or 72h).
+- Redact `/driver/:token/` path segments from access logs.
+- Serve driver pages with `Referrer-Policy: no-referrer` and no third-party assets.
+
+---
+
+#### TH-L-02 — Driver Endpoint Replay
+
+| Field | Detail |
+|---|---|
+| **Target** | Trade state / Evidence |
+| **Vector** | A captured valid `pickup` or `attest` request is re-sent, possibly from a different network. |
+| **Impact** | Duplicate pickup events or conflicting attestations written to the trade history. |
+| **Likelihood** | Medium |
+
+**Current Controls:**
+- None specific to driver links. Idempotency keys apply to backend mutation endpoints generally, but the driver endpoints are unauthenticated and do not rely on them.
+
+**Recommended Mitigations:**
+- Enforce a one-way driver state machine (`issued → picked_up → attested`) in the database with a conditional update, so a replay fails instead of re-writing state.
+- Bind the attestation to the `pickup` record created for that token.
+
+---
+
+#### TH-L-03 — Token Enumeration and Brute Force
+
+| Field | Detail |
+|---|---|
+| **Target** | Driver links / Trade integrity |
+| **Vector** | The `/driver/:token/*` endpoints are unauthenticated, so an attacker can script guesses or distinguish valid from invalid tokens by response code or timing. |
+| **Impact** | Unauthorised pickup or attest on a live trade. |
+| **Likelihood** | Low if tokens are random, Medium if they are not. |
+
+**Current Controls:**
+- Per-IP rate limit on both driver endpoints (`RATE_LIMIT_CONFIG.driverToken`: 20 requests per 15 minutes). Implemented in `backend/src/routes/manifest.routes.ts`.
+- Limits are per IP only, so distributed guessing is not covered.
+
+**Recommended Mitigations:**
+- Generate tokens with `crypto.randomBytes(32)` (256 bits of entropy).
+- Return one generic `404` for unknown, expired, and used tokens so responses do not reveal which case applies.
+- Add a per-token failure counter that locks the token after a small number of bad attempts.
+
+---
+
+#### TH-L-04 — Seller Self-Attestation via Issued Link
+
+| Field | Detail |
+|---|---|
+| **Target** | Buyer |
+| **Vector** | The seller both issues the driver link and receives its token. The seller can therefore call `attest` with `outcome = "delivered"` without a real driver, which can close the trade in the seller's favour. |
+| **Impact** | Buyer pays for goods that were not delivered; the dispute path depends on evidence the seller controls. |
+| **Likelihood** | Medium |
+
+**Current Controls:**
+- `attest` requires the bearer token, which only exists after the seller issued a link.
+
+**Recommended Mitigations:**
+- Require a `videoCid` on `delivered` attestations and anchor it on-chain before the trade can move to `Completed`.
+- Bind the token to the driver device on first pickup (device fingerprint from `deviceMetadata`) so the seller cannot reuse it for attestation.
+- Route `lost` and any disputed `delivered` outcome to the mediator, not directly to settlement.
+
+---
+
+#### TH-L-05 — Missing Driver Service Implementation
+
+| Field | Detail |
+|---|---|
+| **Target** | Availability / Release integrity |
+| **Vector** | `backend/src/routes/manifest.routes.ts` calls `issueDriverLink`, `confirmDriverPickup`, and `attestDriverOutcome`, and imports `ManifestTokenError`. None of these are exported by `backend/src/services/manifest.service.ts` on this branch. |
+| **Impact** | The backend cannot compile with this route file. The driver flow has no working token lifecycle, so TH-L-01 through TH-L-04 cannot be closed by configuration alone. |
+| **Likelihood** | Certain on this branch. |
+
+**Recommended Mitigations:**
+- Implement the driver-token lifecycle in `manifest.service.ts` (issue, hash-at-rest, expiry, single-use pickup, attest) alongside the mitigations above before the driver routes are exposed.
+
+---
+
 ## 4. Security Controls Summary
 
 | Control | Location | Status |
@@ -332,6 +429,10 @@ Created → Funded → Delivered → Completed
 | Appeal window post-resolution | Contract | ❌ Not implemented |
 | Evidence IPFS pinning service | Infrastructure | ❌ Not implemented |
 | Mediator outcome audit log | Backend / Admin dashboard | ❌ Not implemented |
+| Per-IP rate limit on driver token endpoints | `RATE_LIMIT_CONFIG.driverToken`, `manifest.routes.ts` | ✅ Implemented (TH-L-03) |
+| Driver token generation, hash-at-rest, expiry, single-use | Backend manifest service | ❌ Not implemented (TH-L-01, TH-L-02, TH-L-05) |
+| Driver state machine guard on pickup and attest | Backend manifest service | ❌ Not implemented (TH-L-02) |
+| Seller cannot self-attest delivery | Backend manifest service | ❌ Not implemented (TH-L-04) |
 
 ---
 
@@ -341,6 +442,9 @@ Created → Funded → Delivered → Completed
 |---|---|---|
 | **P0 – Critical** | TH-P-02 Admin key is single point of failure → use multisig | High |
 | **P0 – Critical** | TH-R-01/R-02 Ensure JWT TTL + Redis revocation in production | Low |
+| **P0 – Critical** | TH-L-05 Implement driver-token service methods so `manifest.routes.ts` compiles and the lifecycle exists | Medium |
+| **P1 – High** | TH-L-01 Hash driver tokens at rest, single-use pickup, short expiry, redact token paths from logs | Medium |
+| **P1 – High** | TH-L-04 Block seller self-attestation (video CID required, device-bound token, mediator route for disputes) | Medium |
 | **P1 – High** | TH-E-02 Seller must accept trade terms before funding | Medium |
 | **P1 – High** | TH-P-01 Mediator consensus for high-value trade resolution | Medium |
 | **P1 – High** | TH-P-04 Restrict video proof submission to seller only | Low |
@@ -388,3 +492,4 @@ This document is **not static**. It is reviewed on the following schedule so tha
 | Date | Reviewer | Summary |
 |---|---|---|
 | 2026-08-26 | `@Ndifreke000` | First formal quarterly-cadence review. Established owner, cadence, trigger conditions, and this changelog per issue #210. No control status changes from §4; matrix and priority ranking confirmed current as of this date. |
+| 2026-10-18 | Pending owner review (`@Ndifreke000`) | Trigger-based review for the new wallet-less driver links (issue #469, new external SMS channel and unauthenticated endpoints). Added §3.5 (TH-L-01 to TH-L-05), control rows, and priorities. Shipped per-IP rate limit `driverToken` on `/driver/:token/pickup` and `/attest`. Flagged that the driver service methods referenced by the routes are missing on this branch. |

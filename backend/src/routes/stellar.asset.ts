@@ -15,7 +15,21 @@ interface AssetRecord {
   numAccounts: number;
 }
 
-function parseAsset(raw: any): AssetRecord {
+interface HorizonAssetRaw {
+  asset_code?: string;
+  asset_issuer?: string;
+  amount?: string;
+  flags?: {
+    auth_required?: boolean;
+    auth_revocable?: boolean;
+    auth_clawback_enabled?: boolean;
+  };
+  accounts?: {
+    authorized?: number;
+  };
+}
+
+function parseAsset(raw: HorizonAssetRaw): AssetRecord {
   return {
     code: raw.asset_code ?? "XLM",
     issuer: raw.asset_issuer ?? "",
