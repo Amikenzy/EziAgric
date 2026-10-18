@@ -1,17 +1,29 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import { validateRequest } from '../middleware/validateRequest';
+import { paginateWithCursor, InvalidCursorError } from '../lib/cursorPagination';
 import { prisma } from '../lib/db';
 import { appLogger } from '../middleware/logger';
 
 const router = Router();
 
+const regionsQuerySchema = z.object({
+  state: z.string().optional(),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+
 /**
  * GET /regions
- * Returns Nigerian states (36 + FCT) with their LGAs.
+ * Returns Nigerian states (36 + FCT) with their LGAs, cursor-paginated.
  * Optional query param `state` filters by state name or code (case-insensitive).
+ * Optional query params `cursor` and `limit` (default 20, max 100) page through results;
+ * pass `pageInfo.nextCursor` back as `cursor` to fetch the next page.
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', validateRequest({ query: regionsQuerySchema }), async (req: Request, res: Response) => {
   try {
-    const stateFilter = typeof req.query.state === 'string' ? req.query.state.trim() : undefined;
+    const { state, cursor, limit } = regionsQuerySchema.parse(req.query);
+    const stateFilter = state?.trim();
 
     const where = stateFilter
       ? {
@@ -22,15 +34,25 @@ router.get('/', async (req: Request, res: Response) => {
         }
       : undefined;
 
-    const regions = await prisma.region.findMany({
-      where,
-      include: { lgas: true },
-      orderBy: { name: 'asc' },
+    const result = await paginateWithCursor({
+      findMany: (args) =>
+        prisma.region.findMany({
+          where,
+          include: { lgas: true },
+          ...args,
+        } as any),
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      cursor,
+      limit,
     });
 
-    res.json({ data: regions });
-  } catch (err) {
-    appLogger.error({ err, state: req.query.state }, 'Failed to fetch regions');
+    res.json({ data: result.items, pageInfo: result.pageInfo });
+  } catch (error) {
+    if (error instanceof InvalidCursorError) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    appLogger.error({ err: error, state: req.query.state }, 'Failed to fetch regions');
     res.status(500).json({ error: 'Failed to fetch regions' });
   }
 });

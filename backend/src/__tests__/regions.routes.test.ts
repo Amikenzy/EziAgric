@@ -3,10 +3,8 @@ import express from "express";
 
 const mockFindMany = jest.fn();
 
-jest.mock("@prisma/client", () => ({
-  PrismaClient: jest.fn().mockImplementation(() => ({
-    region: { findMany: mockFindMany },
-  })),
+jest.mock("../lib/db", () => ({
+  prisma: { region: { findMany: mockFindMany } },
 }));
 
 import regionsRouter from "../routes/regions";
@@ -39,12 +37,16 @@ describe("GET /regions", () => {
     const res = await request(app).get("/regions");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ data: [KANO, LAGOS] });
-    expect(mockFindMany).toHaveBeenCalledWith({
+    expect(res.body).toEqual({
+      data: [KANO, LAGOS],
+      pageInfo: { nextCursor: null, hasNextPage: false, limit: 20 },
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(expect.objectContaining({
       where: undefined,
       include: { lgas: true },
-      orderBy: { name: "asc" },
-    });
+      take: 21,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+    }));
   });
 
   it("filters by state name case-insensitively", async () => {
@@ -53,7 +55,10 @@ describe("GET /regions", () => {
     const res = await request(app).get("/regions").query({ state: "  lAgOs " });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ data: [LAGOS] });
+    expect(res.body).toEqual({
+      data: [LAGOS],
+      pageInfo: { nextCursor: null, hasNextPage: false, limit: 20 },
+    });
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -72,7 +77,10 @@ describe("GET /regions", () => {
     const res = await request(app).get("/regions").query({ state: "kn" });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ data: [KANO] });
+    expect(res.body).toEqual({
+      data: [KANO],
+      pageInfo: { nextCursor: null, hasNextPage: false, limit: 20 },
+    });
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -91,7 +99,10 @@ describe("GET /regions", () => {
     const res = await request(app).get("/regions").query({ state: "Atlantis" });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ data: [] });
+    expect(res.body).toEqual({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false, limit: 20 },
+    });
   });
 
   it("returns 500 when the database query fails", async () => {
