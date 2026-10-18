@@ -115,7 +115,7 @@ jobs:
 
       - name: Download main baseline
         if: github.event_name == 'pull_request'
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v27
         with:
           workflow: contract-coverage.yml
           branch: main

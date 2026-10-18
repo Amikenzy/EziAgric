@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/db';
+import { appLogger } from '../middleware/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /regions
@@ -29,7 +29,8 @@ router.get('/', async (req: Request, res: Response) => {
     });
 
     res.json({ data: regions });
-  } catch (error) {
+  } catch (err) {
+    appLogger.error({ err, state: req.query.state }, 'Failed to fetch regions');
     res.status(500).json({ error: 'Failed to fetch regions' });
   }
 });
