@@ -228,7 +228,7 @@ sequenceDiagram
 
 ### Phase 4: Mainnet & Scale
 
-- [ ] Public pilot program with regional agricultural cooperatives.
+- [ ] Public pilot program with regional agricultural cooperatives. See the [pilot onboarding checklist and tracker](docs/pilot-onboarding.md).
 - [x] Implementation of a "Trust Score" reputation system.
 
 ---
