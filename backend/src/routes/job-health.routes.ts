@@ -6,9 +6,12 @@
  */
 
 import { Router, Request, Response, NextFunction } from "express";
-import { jobHeartbeatService } from "../services/jobHeartbeat.service";
+import { JobType, jobHeartbeatService } from "../services/jobHeartbeat.service";
 import { appLogger } from "../middleware/logger";
 import { prisma } from "../lib/db";
+
+const isJobType = (value: string): value is JobType =>
+  (Object.values(JobType) as string[]).includes(value);
 
 export function createJobHealthRoutes(): Router {
   const router = Router();
@@ -85,7 +88,9 @@ export function createJobHealthRoutes(): Router {
         const jobTypeParam = Array.isArray(req.params.jobType)
           ? req.params.jobType[0]
           : req.params.jobType;
-        const health = await jobHeartbeatService.getJobHealth(jobTypeParam as any);
+        const health = isJobType(jobTypeParam)
+          ? await jobHeartbeatService.getJobHealth(jobTypeParam)
+          : null;
 
         if (!health) {
           return res.status(404).json({
@@ -205,7 +210,9 @@ export function createJobHealthRoutes(): Router {
         const jobTypeParam = Array.isArray(req.params.jobType)
           ? req.params.jobType[0]
           : req.params.jobType;
-        const health = await jobHeartbeatService.getJobHealth(jobTypeParam as any);
+        const health = isJobType(jobTypeParam)
+          ? await jobHeartbeatService.getJobHealth(jobTypeParam)
+          : null;
 
         if (!health) {
           return res.status(404).json({
