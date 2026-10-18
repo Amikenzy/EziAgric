@@ -1,6 +1,7 @@
 import { Response, Router } from "express";
 import { z } from "zod";
 import * as StellarSdk from "@stellar/stellar-sdk";
+import { callerAddress } from "../lib/callerAddress";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
 import { validateRequest } from "../middleware/validateRequest";
@@ -16,18 +17,13 @@ const stellarAddress = z
 const walletAddressParamSchema = z.object({
   walletAddress: stellarAddress,
 });
-
-function caller(req: AuthRequest): string | undefined {
-  return req.user?.walletAddress;
-}
-
 export function createPrivacyRouter() {
   const router = Router();
 
   router.get("/users/me/export", authMiddleware, async (req: AuthRequest, res: Response, next) => {
     try {
-      const address = caller(req);
-      if (!address) return res.status(401).json({ error: "Unauthorized" });
+      const address = callerAddress(req, res);
+      if (!address) return;
       res.json(await exportUserData(address));
     } catch (error) {
       next(error);
@@ -36,8 +32,8 @@ export function createPrivacyRouter() {
 
   router.delete("/users/me", authMiddleware, async (req: AuthRequest, res: Response, next) => {
     try {
-      const address = caller(req);
-      if (!address) return res.status(401).json({ error: "Unauthorized" });
+      const address = callerAddress(req, res);
+      if (!address) return;
       res.json(await eraseUserData(address));
     } catch (error) {
       next(error);

@@ -12,6 +12,11 @@ const sweepBodySchema = z.object({
   batchSize: z.number().int().min(1).max(500).default(100),
 });
 
+const listQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+
 export function createAdminExpiryRouter(): Router {
   const router = Router();
 
@@ -62,10 +67,12 @@ export function createAdminExpiryRouter(): Router {
    */
   router.get(
     '/api/admin/trades/pending-refunds',
-    async (_req: AuthRequest, res: Response) => {
+    validateRequest({ query: listQuerySchema }),
+    async (req: AuthRequest, res: Response) => {
       try {
-        const pending = await tradeExpiryService.getPendingRefunds();
-        res.json({ count: pending.length, trades: pending });
+        const { page, limit } = listQuerySchema.parse(req.query);
+        const { items, total } = await tradeExpiryService.getPendingRefunds(page, limit);
+        res.json({ count: total, trades: items, page, limit });
       } catch (err) {
         appLogger.error({ err }, 'Failed to fetch pending refunds');
         res.status(500).json({ error: 'Internal server error' });

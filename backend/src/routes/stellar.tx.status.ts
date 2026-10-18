@@ -8,12 +8,12 @@ function parseResultCodes(resultXdr: string): { transaction: string; operations:
     const xdr = Buffer.from(resultXdr, "base64");
     const result = StellarSdk.xdr.TransactionResult.fromXDR(xdr);
     const resultCode = result.result().switch();
-    const transactionCode = (resultCode as any).name || "unknown";
+    const transactionCode = resultCode.name || "unknown";
 
     const opResults = result.result().results() || [];
     const operationCodes = opResults.map((op) => {
       const opResult = op.tr().switch();
-      return (opResult as any).name || "unknown";
+      return opResult.name || "unknown";
     });
 
     return {

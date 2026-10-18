@@ -253,6 +253,12 @@ export default function Home() {
             <Link href="/dashboard" className="hover:text-text-secondary transition-colors">
               Dashboard
             </Link>
+            <Link href="/terms" className="hover:text-text-secondary transition-colors">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-text-secondary transition-colors">
+              Privacy
+            </Link>
           </nav>
         </div>
       </footer>

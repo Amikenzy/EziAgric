@@ -56,6 +56,20 @@ export default tseslint.config(
     },
   },
   {
+    // Route handlers parse untrusted request input and are the service boundary;
+    // explicit any there hides the shape of that input. Add a file here once its
+    // any usages are gone; the rest are tracked in docs/explicit-any-audit.md.
+    files: [
+      "src/routes/job-health.routes.ts",
+      "src/routes/outbox.routes.ts",
+      "src/routes/escrow.schedule.routes.ts",
+      "src/routes/stellar.asset.ts",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  {
     files: ["src/config/tracing.ts"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
