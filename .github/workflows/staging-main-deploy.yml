@@ -1,0 +1,100 @@
+name: Staging Deploy (main)
+
+# Always-on pilot staging, auto-deployed from main (issue #467).
+#
+# - push to main: triggers the staging deploy of backend + frontend via their
+#   host deploy hooks, waits for readiness, then runs the post-deploy smoke test.
+# - The Stellar testnet escrow contract is pinned per release in
+#   deployments/testnet.json; the deploy fails if it is not recorded there.
+# - Rollback: see docs/runbooks/staging-environment.md.
+#
+# Required secrets (environment: staging):
+#   STAGING_URL                  — public base URL of the staging backend
+#   STAGING_BACKEND_DEPLOY_HOOK  — host deploy hook that rebuilds the backend
+#   STAGING_FRONTEND_DEPLOY_HOOK — host deploy hook that rebuilds the frontend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "contracts/**"
+      - "infra/**"
+      - "deployments/**"
+      - "scripts/staging-admin-smoke-test.sh"
+      - ".github/workflows/staging-main-deploy.yml"
+
+concurrency:
+  group: staging-main-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy & Smoke Test Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Verify testnet contract is pinned
+        run: |
+          node -e "
+            const d = require('./deployments/testnet.json');
+            if (d.network !== 'testnet' || !d.contractId || !d.wasmHash) {
+              console.error('deployments/testnet.json must pin contractId and wasmHash before staging deploys');
+              process.exit(1);
+            }
+            console.log('Pinned testnet contract: ' + d.contractId + ' (wasm ' + d.wasmHash + ')');
+          " | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Trigger backend deploy
+        run: |
+          curl --fail --silent --show-error -X POST "${{ secrets.STAGING_BACKEND_DEPLOY_HOOK }}"
+
+      - name: Trigger frontend deploy
+        run: |
+          curl --fail --silent --show-error -X POST "${{ secrets.STAGING_FRONTEND_DEPLOY_HOOK }}"
+
+      - name: Wait for backend readiness
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent "$STAGING_URL/health/ready" > /dev/null; then
+              echo "Backend ready after attempt $i"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error title=Staging not ready::$STAGING_URL/health/ready did not return 200 within 5 minutes"
+          exit 1
+        timeout-minutes: 7
+
+      - name: Smoke test core endpoints
+        run: |
+          curl --fail --silent --show-error "$STAGING_URL/health" > /dev/null
+          curl --fail --silent --show-error "$STAGING_URL/health/startup" > /dev/null
+
+      - name: Run staging admin smoke test
+        run: |
+          chmod +x ./scripts/staging-admin-smoke-test.sh
+          ./scripts/staging-admin-smoke-test.sh
+        timeout-minutes: 5
+
+      - name: Record deployed commit
+        if: success()
+        run: |
+          echo "### Staging deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: $STAGING_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify on staging deploy failure
+        if: failure()
+        run: |
+          echo "::error title=Staging Deploy Failure::Staging deploy from main failed. See docs/runbooks/staging-environment.md#rollback"
+          echo "### Staging deploy failed for ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Roll back using docs/runbooks/staging-environment.md." >> "$GITHUB_STEP_SUMMARY"
