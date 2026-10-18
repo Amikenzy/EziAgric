@@ -17,6 +17,12 @@ import { prisma } from "../lib/db";
 
 const isAdmin = adminMiddleware;
 
+const OUTBOX_GAP_FORMATS = ["json", "csv", "markdown"] as const;
+type OutboxGapFormat = (typeof OUTBOX_GAP_FORMATS)[number];
+
+const isOutboxGapFormat = (value: string): value is OutboxGapFormat =>
+  (OUTBOX_GAP_FORMATS as readonly string[]).includes(value);
+
 export function createOutboxRoutes(): Router {
   const router = Router();
 
@@ -78,7 +84,15 @@ export function createOutboxRoutes(): Router {
           ? new Date(req.query.end as string)
           : new Date();
 
-        const format = (req.query.format as string) || "json"; // json, csv, markdown
+        const formatParam = (req.query.format as string) || "json"; // json, csv, markdown
+
+        if (!isOutboxGapFormat(formatParam)) {
+          return res.status(400).json({
+            error: "Invalid format. Expected one of: json, csv, markdown",
+          });
+        }
+
+        const format: OutboxGapFormat = formatParam;
 
         appLogger.info(
           { startTime, endTime, format },
@@ -90,7 +104,7 @@ export function createOutboxRoutes(): Router {
         if (format === "json") {
           res.status(200).json(report);
         } else {
-          const exported = await exportOutboxGaps(report.gaps, format as any);
+          const exported = await exportOutboxGaps(report.gaps, format);
           res.status(200).type(format === "csv" ? "text/csv" : "text/markdown");
           res.send(exported);
         }
