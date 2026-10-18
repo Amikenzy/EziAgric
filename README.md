@@ -133,9 +133,8 @@ For the protected branch (`main`), set these required status checks:
 
 - `Frontend Required Gate`
 - `Backend Required Gate`
+- `Mobile Required Gate`
 - `Contracts Required Gate`
-
----
 
 ---
 
@@ -320,8 +319,6 @@ step-by-step example.
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-// setting up and starting out
 
 ## Handsoff notes
 
