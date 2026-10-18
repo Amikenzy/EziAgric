@@ -1,9 +1,8 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { redis } from '../lib/redis';
 import { isCooperativeManager } from '../lib/accessControl';
+import { prisma } from '../lib/db';
 import { formatStroopsToDecimal, parseDecimalToStroops } from '../lib/money';
-
-const prisma = new PrismaClient();
 
 const STATS_CACHE_TTL_SECONDS = 5 * 60;
 
