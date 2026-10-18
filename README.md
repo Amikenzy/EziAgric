@@ -62,6 +62,8 @@ cargo, wasm32 target, stellar CLI), prints the exact install command for anythin
 finishes with one smoke test per stack. Hit something it didn't catch? Open an
 **Onboarding friction** issue.
 
+Setup failing? See [Troubleshooting local setup](docs/troubleshooting-local-setup.md) for fixes to common problems.
+
 ### Frontend setup
 
 1. `cd frontend`
