@@ -177,7 +177,13 @@ export function createOutboxRoutes(): Router {
           });
         }
 
-        const event =await prisma.chainEventOutbox.findFirst({
+        if (eventId && !/^[1-9]\d*$/.test(String(eventId))) {
+          return res.status(400).json({
+            error: "Invalid eventId: must be a positive integer",
+          });
+        }
+
+        const event = await prisma.chainEventOutbox.findFirst({
           where: eventId ? { id: parseInt(eventId) } : { tradeId },
           orderBy: { createdAt: "desc" },
         });
