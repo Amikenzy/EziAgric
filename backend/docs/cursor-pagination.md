@@ -62,6 +62,9 @@ endpoints.
 - `GET /listings` ([listings.routes.ts](../src/routes/listings.routes.ts)) —
   supports `commodity`, `region`, `minPrice`, `maxPrice`, and `minQuantity`
   filters (combined with AND semantics) alongside `cursor`/`limit`.
+- `GET /regions` ([regions.ts](../src/routes/regions.ts)) — supports `state`
+  filter alongside `cursor`/`limit`. Never had offset pagination, so no `page`
+  fallback is needed.
 
 ## Endpoints intentionally not migrated yet
 
