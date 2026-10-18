@@ -47,6 +47,7 @@ export enum GeneratedEventType {
   TimelockOperationExecuted = "TimelockOperationExecuted",
   TimelockOperationCancelled = "TimelockOperationCancelled",
   ContractUpgradeQueued = "ContractUpgradeQueued",
+  PartialDeliveryConfirmed = "PartialDeliveryConfirmed",
 }
 
 /**
@@ -93,6 +94,7 @@ export const TOPIC_TO_EVENT_TYPE: Readonly<Record<string, GeneratedEventType>> =
   "TLKEXE": GeneratedEventType.TimelockOperationExecuted,
   "TLKCAN": GeneratedEventType.TimelockOperationCancelled,
   "UPGQUE": GeneratedEventType.ContractUpgradeQueued,
+  "PARTDL": GeneratedEventType.PartialDeliveryConfirmed,
 };
 
 /** Full topic tuple each event is published under. */
@@ -134,6 +136,7 @@ export const EVENT_TOPICS: Readonly<Record<GeneratedEventType, readonly string[]
   [GeneratedEventType.TimelockOperationExecuted]: ["TLKEXE"],
   [GeneratedEventType.TimelockOperationCancelled]: ["TLKCAN"],
   [GeneratedEventType.ContractUpgradeQueued]: ["UPGQUE"],
+  [GeneratedEventType.PartialDeliveryConfirmed]: ["PARTDL"],
 };
 
 /** Field names of each event, in declaration order. */
@@ -175,6 +178,7 @@ export const EVENT_FIELDS: Readonly<Record<GeneratedEventType, readonly string[]
   [GeneratedEventType.TimelockOperationExecuted]: ["operation_id", "executed_at"],
   [GeneratedEventType.TimelockOperationCancelled]: ["operation_id", "cancelled_at", "admin"],
   [GeneratedEventType.ContractUpgradeQueued]: ["operation_id", "new_wasm_hash", "queued_at", "execute_after"],
+  [GeneratedEventType.PartialDeliveryConfirmed]: ["trade_id", "delivered_bps", "seller_amount", "buyer_refund", "fee_amount"],
 };
 
 /** Payload of the `amana/initialized` event. */
@@ -466,6 +470,15 @@ export interface ContractUpgradeQueuedPayload {
   execute_after: bigint;
 }
 
+/** Payload of the `PARTDL` event. */
+export interface PartialDeliveryConfirmedPayload {
+  trade_id: bigint;
+  delivered_bps: number;
+  seller_amount: bigint;
+  buyer_refund: bigint;
+  fee_amount: bigint;
+}
+
 /** Payload type for a given event type. */
 export interface EventPayloadMap {
   [GeneratedEventType.Initialized]: InitializedPayload;
@@ -505,6 +518,7 @@ export interface EventPayloadMap {
   [GeneratedEventType.TimelockOperationExecuted]: TimelockOperationExecutedPayload;
   [GeneratedEventType.TimelockOperationCancelled]: TimelockOperationCancelledPayload;
   [GeneratedEventType.ContractUpgradeQueued]: ContractUpgradeQueuedPayload;
+  [GeneratedEventType.PartialDeliveryConfirmed]: PartialDeliveryConfirmedPayload;
 }
 
 /** Events that move a trade's status, and where they move it to. */

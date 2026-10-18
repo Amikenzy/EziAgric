@@ -30,3 +30,8 @@ export const createTradeTemplateSchema = z
 export const templateIdParamSchema = z.object({
   templateId: z.coerce.number().int().positive(),
 });
+
+export const listTradeTemplatesQuerySchema = z.object({
+  page: z.preprocess((val: unknown) => val === undefined ? undefined : Number(val), z.number().int().min(1).default(1)),
+  limit: z.preprocess((val: unknown) => val === undefined ? undefined : Number(val), z.number().int().min(1).max(100).default(20)),
+});

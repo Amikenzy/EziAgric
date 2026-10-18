@@ -110,3 +110,51 @@ export function canActOnBehalfOfCooperative(
   const role = resolveCooperativeRole(members, userId);
   return role !== null && canCreateCooperativeTrade(role);
 }
+
+/**
+ * A member's consent for a cooperative agent to act on their behalf. Consent
+ * is only effective once confirmed with an SMS OTP (`otpVerifiedAt`) and stays
+ * effective until the member revokes it (`revokedAt`).
+ */
+export interface AgentConsentRecord {
+  memberId: string;
+  agentId: string;
+  otpVerifiedAt: Date | null;
+  revokedAt: Date | null;
+}
+
+/**
+ * Returns true when `memberId` has an OTP-confirmed, unrevoked consent in
+ * `consents` that allows `agentId` to act for them.
+ */
+export function hasActiveAgentConsent(
+  consents: ReadonlyArray<AgentConsentRecord>,
+  agentId: string,
+  memberId: string
+): boolean {
+  return consents.some(
+    (consent) =>
+      consent.agentId === agentId &&
+      consent.memberId === memberId &&
+      consent.otpVerifiedAt !== null &&
+      consent.revokedAt === null
+  );
+}
+
+/**
+ * Returns true when `agentId` may act for `memberId` in the cooperative: the
+ * agent holds a trade-creating role, the member belongs to the cooperative,
+ * and the member has an active consent granted to that agent.
+ */
+export function canActAsMemberWithConsent(
+  members: ReadonlyArray<{ userId: string; role: string }>,
+  consents: ReadonlyArray<AgentConsentRecord>,
+  agentId: string,
+  memberId: string
+): boolean {
+  return (
+    canActOnBehalfOfCooperative(members, agentId) &&
+    resolveCooperativeRole(members, memberId) !== null &&
+    hasActiveAgentConsent(consents, agentId, memberId)
+  );
+}

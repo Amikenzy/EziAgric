@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { NavLink } from "@/components/ui/Navigation";
+import { readLegalConsent, saveLegalConsent } from "@/lib/legal";
 
 export interface SideNavBarProps {
   activePath: string;
@@ -117,6 +118,17 @@ export function SideNavBar({
   walletAddress,
   onClose,
 }: SideNavBarProps) {
+  const [legalConsented, setLegalConsented] = useState(false);
+
+  useEffect(() => {
+    setLegalConsented(readLegalConsent() !== null);
+  }, []);
+
+  function handleConnect() {
+    saveLegalConsent();
+    onConnectWallet();
+  }
+
   return (
     <aside
       className={`${
@@ -203,14 +215,38 @@ export function SideNavBar({
             </p>
           </div>
         ) : (
-          <Button
-            type="button"
-            onClick={onConnectWallet}
-            variant="primary"
-            className={collapsed ? "px-2 py-2.5" : "px-3 py-2.5"}
-          >
-            {collapsed ? "Link" : "Connect Wallet"}
-          </Button>
+          <div className="space-y-3">
+            <label className="flex items-start gap-2 cursor-pointer text-xs text-text-secondary leading-snug">
+              <input
+                type="checkbox"
+                checked={legalConsented}
+                onChange={(e) => setLegalConsented(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border-default accent-gold"
+                aria-label="I agree to the Terms of Service and Privacy Notice"
+              />
+              {!collapsed && (
+                <span>
+                  I agree to the{" "}
+                  <Link href="/terms" className="underline hover:text-text-primary">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="underline hover:text-text-primary">
+                    Privacy Notice
+                  </Link>
+                </span>
+              )}
+            </label>
+            <Button
+              type="button"
+              onClick={handleConnect}
+              disabled={!legalConsented}
+              variant="primary"
+              className={collapsed ? "px-2 py-2.5" : "px-3 py-2.5"}
+            >
+              {collapsed ? "Link" : "Connect Wallet"}
+            </Button>
+          </div>
         )}
       </div>
     </aside>

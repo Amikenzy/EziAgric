@@ -60,7 +60,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Assume plan role (read-only)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ env.PLAN_ROLE_ARN }}
           role-session-name: tf-drift-${{ matrix.environment }}-${{ github.run_id }}
@@ -136,7 +136,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Assume apply role
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.TF_APPLY_ROLE_ARN }}
           role-session-name: tf-lock-test-${{ inputs.environment }}-${{ github.run_id }}

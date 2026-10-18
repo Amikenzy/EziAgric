@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320" role="img" aria-labelledby="title desc" data-source="docs/architecture/containers.md">
+  <title id="title">Containers — EziAgric escrow platform</title>
+  <desc id="desc">Generated preview of the Mermaid container diagram. Every label below is present in the Mermaid source in docs/architecture/containers.md; regenerate with `node scripts/check-architecture-diagrams.mjs --render` after editing it.</desc>
+  <style>
+    .group { fill: none; stroke: #7a8095; stroke-dasharray: 5 4; stroke-width: 1.4; }
+    .client { fill: #f5f7ff; stroke: #35427a; stroke-width: 1.5; }
+    .service { fill: #f2fbf5; stroke: #1f6b3a; stroke-width: 1.5; }
+    .data { fill: #fff8f2; stroke: #8a4a1f; stroke-width: 1.5; }
+    .chain { fill: #fdf2f5; stroke: #7a1f3a; stroke-width: 1.5; }
+    .lbl { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #10131c; }
+    .cap { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #3b4256; }
+    .line { stroke: #59617a; stroke-width: 1.2; marker-end: url(#arrow); fill: none; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#59617a" />
+    </marker>
+  </defs>
+  <text x="16" y="26" class="lbl" font-size="15">Containers — EziAgric escrow platform</text>
+  <rect class="group" x="30" y="46" width="250" height="120" rx="10" />
+  <text x="42" y="66" class="cap">Clients</text>
+  <rect class="client" x="44" y="76" width="222" height="36" rx="6" />
+  <text x="56" y="99" class="lbl">Next.js web app</text>
+  <rect class="client" x="44" y="118" width="222" height="36" rx="6" />
+  <text x="56" y="141" class="lbl">React Native mobile app</text>
+  <rect class="group" x="300" y="46" width="250" height="120" rx="10" />
+  <text x="312" y="66" class="cap">Services</text>
+  <rect class="service" x="314" y="76" width="222" height="36" rx="6" />
+  <text x="326" y="99" class="lbl">Backend API</text>
+  <rect class="service" x="314" y="118" width="222" height="36" rx="6" />
+  <text x="326" y="141" class="lbl">Event listener and indexer</text>
+  <rect class="group" x="570" y="46" width="170" height="120" rx="10" />
+  <text x="582" y="66" class="cap">Data</text>
+  <rect class="data" x="584" y="76" width="142" height="36" rx="6" />
+  <text x="596" y="99" class="lbl">PostgreSQL</text>
+  <rect class="group" x="300" y="196" width="250" height="96" rx="10" />
+  <text x="312" y="216" class="cap">Stellar</text>
+  <rect class="chain" x="314" y="226" width="222" height="34" rx="6" />
+  <text x="326" y="248" class="lbl">amana_escrow contract</text>
+  <rect class="chain" x="314" y="264" width="222" height="24" rx="6" />
+  <text x="326" y="281" class="lbl">cNGN SAC</text>
+  <path class="line" d="M 266 94 L 300 94" />
+  <path class="line" d="M 266 136 L 300 136" />
+  <path class="line" d="M 536 94 L 570 94" />
+  <path class="line" d="M 536 136 L 570 136" />
+  <path class="line" d="M 425 166 L 425 226" />
+  <path class="line" d="M 425 260 L 425 264" />
+</svg>
