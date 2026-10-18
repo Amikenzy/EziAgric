@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { authenticate } from '../middleware/auth';
+import { authMiddleware as authenticate } from '../middleware/auth.middleware';
 import { requireCooperativeManager } from '../lib/accessControl';
 import { analyticsService } from '../services/analytics.service';
 

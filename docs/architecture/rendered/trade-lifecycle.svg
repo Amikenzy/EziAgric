@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" width="700" height="340" role="img" aria-labelledby="title desc" data-source="docs/architecture/sequences/trade-lifecycle.md">
+  <title id="title">Trade lifecycle sequence</title>
+  <desc id="desc">Generated preview of the Mermaid sequence diagram in docs/architecture/sequences/trade-lifecycle.md. Regenerate with `node scripts/check-architecture-diagrams.mjs --render`.</desc>
+  <style>
+    .lbl { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #10131c; }
+    .p { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #35427a; }
+    .line { stroke: #59617a; stroke-width: 1.2; }
+  </style>
+  <text x="16" y="26" class="lbl" font-size="15">Trade lifecycle sequence</text>
+  <text x="20" y="56" class="p">Buyer</text>
+  <text x="185" y="56" class="p">amana_escrow</text>
+  <text x="380" y="56" class="p">cNGN SAC</text>
+  <text x="545" y="56" class="p">Seller</text>
+  <line class="line" x1="60" y1="64" x2="60" y2="330" />
+  <line class="line" x1="240" y1="64" x2="240" y2="330" />
+  <line class="line" x1="430" y1="64" x2="430" y2="330" />
+  <line class="line" x1="590" y1="64" x2="590" y2="330" />
+  <text x="24" y="90" class="lbl">create_trade(buyer, seller, amount, loss_bps, deadline)</text>
+  <text x="150" y="112" class="lbl">TradeCreatedEvent (status Created)</text>
+  <text x="24" y="134" class="lbl">deposit(trade_id)</text>
+  <text x="250" y="156" class="lbl">transfer buyer to contract</text>
+  <text x="330" y="178" class="lbl">TradeFundedEvent (status Funded)</text>
+  <text x="330" y="200" class="lbl">hand over goods and submit_manifest(trade_id)</text>
+  <text x="24" y="222" class="lbl">confirm_delivery(trade_id)</text>
+  <text x="150" y="244" class="lbl">DeliveryConfirmedEvent (status Delivered)</text>
+  <text x="24" y="266" class="lbl">release_funds(trade_id, buyer)</text>
+  <text x="250" y="288" class="lbl">transfer contract to seller</text>
+  <text x="330" y="310" class="lbl">FundsReleasedEvent (status Completed)</text>
+</svg>

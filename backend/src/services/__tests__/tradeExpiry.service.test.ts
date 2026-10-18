@@ -9,11 +9,13 @@ vi.mock('../../jobs/queue', () => ({
 function makePrisma(overrides: Partial<{
   findMany: ReturnType<typeof vi.fn>;
   updateMany: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
 }> = {}) {
   return {
     trade: {
       findMany: overrides.findMany ?? vi.fn().mockResolvedValue([]),
       updateMany: overrides.updateMany ?? vi.fn().mockResolvedValue({ count: 1 }),
+      count: overrides.count ?? vi.fn().mockResolvedValue(0),
     },
   };
 }
@@ -94,7 +96,7 @@ describe('TradeExpiryService.getPendingRefunds', () => {
     const db = makePrisma({ findMany });
     const service = new TradeExpiryService(db as never);
 
-    await service.getPendingRefunds(10);
+    await service.getPendingRefunds(1, 10);
 
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({

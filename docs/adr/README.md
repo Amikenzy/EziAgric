@@ -6,16 +6,15 @@ follows the template in `template.md` and uses the status lifecycle
 
 ## Index
 
-| ADR | Title | Status |
-| --- | ----- | ------ |
-| [001](001-backend-architecture.md) | Backend architecture | Accepted |
-| [002](002-frontend-architecture.md) | Frontend architecture | Accepted |
-| [003](003-database-and-persistence.md) | Database and persistence | Accepted |
-| [004](004-authentication-and-authorization.md) | Authentication and authorization | Accepted |
-| [005](005-api-and-integration.md) | API and integration | Accepted |
-| [006](006-mobile-navigation-and-state.md) | Mobile navigation and state architecture | Accepted |
-| [007](007-offline-caching-and-conflict-resolution.md) | Offline caching and conflict resolution | Accepted |
-| [008](008-notification-and-deep-link-architecture.md) | Notification and deep-link architecture | Accepted |
+| ADR                                                      | Title                                    | Status   |
+| -------------------------------------------------------- | ---------------------------------------- | -------- |
+| [001](ADR-001-stellar-path-payment-architecture.md)      | Stellar path payment architecture        | Accepted |
+| [002](ADR-002-escrow-loss-sharing-model.md)              | Escrow loss sharing model                | Accepted |
+| [003](ADR-003-offchain-vs-onchain-data-partitioning.md)  | Off-chain vs. on-chain data partitioning | Accepted |
+| [004](ADR-004-idempotency-and-retry-strategy.md)         | Idempotency and retry strategy           | Accepted |
+| [005](ADR-005-frontend-state-management.md)              | Frontend state management                | Accepted |
+| [006](ADR-006-driver-identity-and-attestation-model.md)  | Driver identity and attestation model    | Accepted |
+| [007](ADR-007-product-listings-on-chain-vs-off-chain.md) | Product listings on-chain vs. off-chain  | Accepted |
 
 ## Supersede procedure
 
