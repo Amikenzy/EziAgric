@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { eventListenerConfig } from '../config/eventListener.config';
+import { prisma } from '../lib/db';
 import { EventListenerService } from '../services/eventListener.service';
 
 interface BackfillArgs {
@@ -38,7 +38,6 @@ function parseArgs(argv: string[]): BackfillArgs {
 
 async function main(): Promise<void> {
   const { from, to } = parseArgs(process.argv.slice(2));
-  const prisma = new PrismaClient();
   const service = new EventListenerService(prisma, eventListenerConfig);
 
   console.log(`[events:backfill] starting range ${from}..${to}`);
