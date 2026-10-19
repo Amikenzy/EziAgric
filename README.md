@@ -8,6 +8,8 @@
 
 This is the main repository containing the smart contracts and orchestration logic. Backend, frontend, and mobile applications are maintained in this monorepo for simpler development and unified deployment.
 
+> 📖 New to terms like loss ratio, bps, PoD, manifest, vault or clawback? See the [glossary](./docs/glossary.md).
+
 ---
 
 ## 📁 Repository Layout
