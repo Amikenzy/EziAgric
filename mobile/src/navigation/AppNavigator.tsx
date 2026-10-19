@@ -32,7 +32,7 @@ import { useDeepLink } from '../hooks/useDeepLink';
 import {
   LINK_PREFIXES,
   LINKING_SCREEN_CONFIG,
-  parseDeepLink,
+  resolveDeepLink,
   requiresAuth,
 } from '../constants/links';
 
@@ -54,11 +54,20 @@ function makeLinking(isAuthenticated: boolean): LinkingOptions<RootStackParamLis
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: { screens: LINKING_SCREEN_CONFIG as any },
     getStateFromPath: (path, options) => {
-      const target = parseDeepLink(path);
+      const action = resolveDeepLink(path);
+      // Web-only links (driver SMS links) are opened in the browser by
+      // useDeepLink; there is no in-app state to build for them.
+      if (action?.kind === 'web') return undefined;
+      const target = action?.target;
       if (target && requiresAuth(target) && !isAuthenticated) {
         // Land on WalletConnect; useDeepLink parks the real target and
         // resumes it once a token appears (login-then-continue).
         return { routes: [{ name: 'WalletConnect' }] };
+      }
+      if (target) {
+        // Build the state from our parser so alias paths such as
+        // /trades/:id/dispute land on the same screen as their canonical path.
+        return { routes: [{ name: target.screen, params: target.params }] } as never;
       }
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const nav = require('@react-navigation/native');

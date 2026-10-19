@@ -25,6 +25,33 @@ and `navigation/AppNavigator.tsx`.
 | `/trades/:tradeId/evidence` | `EvidenceCapture` | `{ tradeId }` |
 | `/trades` | `TradeList` | — |
 | `/create-trade` | `CreateTrade` | — |
+| `/trades/create` (alias) | `CreateTrade` | — |
+| `/trades/:tradeId/<section>` (alias, e.g. `/dispute`) | `TradeDetail` | `{ tradeId }` |
+| `/driver` | `DriverHome` | — |
+| `/driver/:token` | *web only* — opened in the browser | — |
+
+Aliases are matched by `parseDeepLink` but left out of
+`LINKING_SCREEN_CONFIG` (one canonical path per screen).
+
+## SMS links (issue #451)
+
+SMS notifications link to the public `https://amanavault.app` URLs, so the same
+link works whether or not the app is installed:
+
+- **Trade links** (`/trades/:tradeId`, `/trades/:tradeId/dispute`, …) are
+  claimed by the app through universal / app links (`/trades/*` in the AASA
+  file and the Android `pathPrefix`). With the app installed they open the
+  trade; any trade sub-page the app has no screen for opens the trade itself
+  instead of being dropped. Without the app they open in the browser.
+- **Driver links** (`/driver/:token`) are deliberately **web only**. The token
+  is redeemed by the web attestation page without a wallet or login, while the
+  app's driver screens need a signed-in driver. These paths are not in the
+  association files, so an SMS tap always opens the browser. If the app does
+  receive one (for example as `amanavault://driver/<token>`),
+  `resolveDeepLink` returns a web action and `useDeepLink` opens it with
+  `Linking.openURL`. Never add `/driver/*` to the association files: the link
+  would bounce back into the app.
+- Links on any other host are never opened as a fallback.
 
 `frontend/src/lib/links.ts` mirrors this table for the web side.
 

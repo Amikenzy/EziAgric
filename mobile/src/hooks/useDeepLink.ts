@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Linking } from 'react-native';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import type { RootStackParamList } from '../types/navigation';
 import { useAuthStore } from '../stores/authStore';
 import {
-  parseDeepLink,
+  resolveDeepLink,
   requiresAuth,
   type DeepLinkTarget,
 } from '../constants/links';
@@ -16,7 +17,9 @@ export type { DeepLinkTarget };
  * - A link that lands while authenticated navigates immediately.
  * - A link that needs auth while signed out is parked; `resumePendingDeepLink`
  *   replays it once a token appears (login-then-continue).
- * - Unrecognised / malformed links are dropped (parseDeepLink returns null).
+ * - Web-only links (driver SMS links, issue #451) open in the browser, where
+ *   the web app handles them without a login.
+ * - Unrecognised / malformed links are dropped (resolveDeepLink returns null).
  *
  * The pending target lives in a module-level slot so it survives the
  * WalletConnect -> TradeList remount that happens on login.
@@ -74,9 +77,13 @@ export function useDeepLink(): UseDeepLinkReturn {
 
   const handleUrl = useCallback(
     (url: string | null | undefined, navigation?: NavigationContainerRef<RootStackParamList> | null) => {
-      const target = parseDeepLink(url);
-      if (!target) return; // malformed / unknown → ignore
-      routeOrPark(target, navigation);
+      const action = resolveDeepLink(url);
+      if (!action) return; // malformed / unknown → ignore
+      if (action.kind === 'web') {
+        Linking.openURL(action.url).catch(() => undefined);
+        return;
+      }
+      routeOrPark(action.target, navigation);
     },
     [routeOrPark],
   );

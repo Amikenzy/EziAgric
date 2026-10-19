@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { useDeepLink, __clearPendingDeepLink } from './useDeepLink';
 import * as authStore from '../stores/authStore';
 
@@ -66,5 +67,35 @@ describe('useDeepLink (auth-aware routing)', () => {
     });
 
     expect(result.current.pendingDeepLink).toBeNull();
+  });
+
+  it('opens driver SMS token links in the browser without parking or navigating (#451)', () => {
+    setAuth(null);
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const nav = { navigate: jest.fn() } as never;
+    const { result } = renderHook(() => useDeepLink());
+
+    act(() => {
+      result.current.handleUrl('amanavault://driver/tok-1', nav);
+    });
+
+    expect(openURL).toHaveBeenCalledWith('https://amanavault.app/driver/tok-1');
+    expect((nav as unknown as { navigate: jest.Mock }).navigate).not.toHaveBeenCalled();
+    expect(result.current.pendingDeepLink).toBeNull();
+    openURL.mockRestore();
+  });
+
+  it('opens an SMS link to a trade sub-page on the trade (#451)', () => {
+    setAuth('tok');
+    const nav = { navigate: jest.fn() } as never;
+    const { result } = renderHook(() => useDeepLink());
+
+    act(() => {
+      result.current.handleUrl('https://amanavault.app/trades/T5/dispute', nav);
+    });
+
+    expect((nav as unknown as { navigate: jest.Mock }).navigate).toHaveBeenCalledWith('TradeDetail', {
+      tradeId: 'T5',
+    });
   });
 });
