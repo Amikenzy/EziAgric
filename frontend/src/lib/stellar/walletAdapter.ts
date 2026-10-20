@@ -48,6 +48,18 @@ export function getLastWallet(): WalletId | null {
   return null;
 }
 
+/** Minimal Freighter API interface. */
+interface FreighterApi {
+  getPublicKey(): Promise<string | { publicKey: string }>;
+  signTransaction(xdr: string, opts?: { networkPassphrase?: string }): Promise<string | { signedTxXdr: string }>;
+}
+
+/** Minimal Albedo API interface. */
+interface AlbedoApi {
+  publicKey(opts: { token: string }): Promise<{ pubkey: string }>;
+  tx(opts: { xdr: string; network?: string; submit: boolean }): Promise<{ signed_envelope_xdr: string }>;
+}
+
 /**
  * Freighter adapter.
  *
@@ -60,7 +72,7 @@ export const freighterAdapter: WalletAdapter = {
 
   async isAvailable(): Promise<boolean> {
     if (typeof window === 'undefined') return false;
-    if ((window as any).freighterApi) return true;
+    if (window.freighterApi) return true;
     try {
       const mod = await import('@stellar/freighter-api');
       return typeof mod !== 'undefined';
@@ -84,12 +96,12 @@ export const freighterAdapter: WalletAdapter = {
   },
 };
 
-async function loadFreighter(): Promise<any> {
-  if (typeof window !== 'undefined' && (window as any).freighterApi) {
-    return (window as any).freighterApi;
+async function loadFreighter(): Promise<FreighterApi> {
+  if (typeof window !== 'undefined' && window.freighterApi) {
+    return window.freighterApi;
   }
   const mod = await import('@stellar/freighter-api');
-  return mod;
+  return mod as unknown as FreighterApi;
 }
 
 /**
@@ -125,9 +137,9 @@ export const albedoAdapter: WalletAdapter = {
   },
 };
 
-async function loadAlbedo(): Promise<any> {
+async function loadAlbedo(): Promise<AlbedoApi> {
   const mod = await import('@albedo-link/intent');
-  return mod.default ?? mod;
+  return (mod.default ?? mod) as AlbedoApi;
 }
 
 /** All supported wallet adapters, in picker order. */

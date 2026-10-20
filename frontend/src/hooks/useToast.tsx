@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addToastWithCorrelation = useCallback((toast: Omit<ToastMessage, "id"> & { correlationId?: string }) => {
-    const correlationId = (toast as any).correlationId as string | undefined;
+    const correlationId = toast.correlationId;
     if (correlationId) {
       const existingId = correlationMap.get(correlationId);
       if (existingId) {
@@ -44,7 +44,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       }
       const id = `toast-${++toastIdCounter}-${Date.now()}`;
       const duration = toast.duration ?? 0; // pending toasts are sticky until resolved
-      const entry = { ...toast, duration, id } as ToastMessage;
+      const entry: ToastMessage = { ...toast, duration, id };
       correlationMap.set(correlationId, id);
       setToasts((prev) => [...prev, entry].slice(-5));
       return id;
@@ -56,7 +56,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = correlationMap.get(correlationId);
     if (!id) {
       // No pending toast, create one
-      addToastWithCorrelation({ ...(patch as any), correlationId });
+      addToastWithCorrelation({ ...patch, correlationId });
       return;
     }
     setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch, duration: patch.duration ?? 5000 } : t)));

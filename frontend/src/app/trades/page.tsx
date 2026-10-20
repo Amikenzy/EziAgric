@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -164,17 +164,19 @@ export default function TradesPage() {
   }, [token, isAuthenticated, activeFilter, page, trackApiFailure, trackFunnelStep]);
 
   /** Client-side role + action filter applied after the API fetch. */
-  const trades = allTrades.filter((t) => {
-    if (activeRole !== "all") {
-      const addr = address?.toLowerCase();
-      const isBuyer = t.buyerAddress.toLowerCase() === addr;
-      const isSeller = t.sellerAddress.toLowerCase() === addr;
-      if (activeRole === "buying" && !isBuyer) return false;
-      if (activeRole === "selling" && !isSeller) return false;
-    }
-    if (needsAction && !needsMyAction(t, address ?? null)) return false;
-    return true;
-  });
+  const trades = useMemo(() => {
+    return allTrades.filter((t) => {
+      if (activeRole !== "all") {
+        const addr = address?.toLowerCase();
+        const isBuyer = t.buyerAddress.toLowerCase() === addr;
+        const isSeller = t.sellerAddress.toLowerCase() === addr;
+        if (activeRole === "buying" && !isBuyer) return false;
+        if (activeRole === "selling" && !isSeller) return false;
+      }
+      if (needsAction && !needsMyAction(t, address ?? null)) return false;
+      return true;
+    });
+  }, [allTrades, activeRole, needsAction, address]);
 
   function handleStatusFilter(value: TradeStatus) {
     pushParams({ status: value === "all" ? null : value, page: null });
