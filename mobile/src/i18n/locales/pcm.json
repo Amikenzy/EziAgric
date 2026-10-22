@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "De load...",
+    "error": "Error",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "save": "Save",
+    "back": "Back",
+    "next": "Next",
+    "success": "Success",
+    "failed": "Fail"
+  },
+  "wallet": {
+    "appName": "EziAgric",
+    "tagline": "Trust as Service for Agriculture Trade",
+    "connect": "Connect Wallet",
+    "connecting": "De connect...",
+    "disconnect": "Disconnect",
+    "instructions": "To start, connect your Stellar wallet with Freighter or Albedo.",
+    "status": {
+      "connected": "Don connect",
+      "disconnected": "Don disconnect",
+      "pending": "De wait",
+      "error": "Connection Error"
+    }
+  },
+  "home": {
+    "welcome": "Welcome to EziAgric",
+    "subtitle": "Secure agriculture trade on blockchain",
+    "createTrade": "Create Trade",
+    "myTrades": "My Trades",
+    "marketplace": "Market",
+    "settings": "Settings",
+    "recentTrades": "Recent Trades",
+    "noTrades": "No trades yet",
+    "viewAll": "See all",
+    "activeTrades": "Active Trades",
+    "completedTrades": "Completed Trades"
+  },
+  "trade": {
+    "create": {
+      "title": "Create Trade",
+      "selectProduct": "Pick Product",
+      "enterAmount": "Enter Amount",
+      "selectSeller": "Pick Seller",
+      "lossRatio": "Loss Sharing",
+      "submit": "Submit Trade",
+      "success": "Trade don success!",
+      "error": "Trade fail",
+      "validation": {
+        "amountRequired": "Amount required",
+        "amountPositive": "Amount must be positive",
+        "productRequired": "Pick product",
+        "sellerRequired": "Pick seller"
+      }
+    },
+    "detail": {
+      "title": "Trade Details",
+      "tradeId": "Trade ID",
+      "status": "Status",
+      "amount": "Amount",
+      "product": "Product",
+      "seller": "Seller",
+      "buyer": "Buyer",
+      "driver": "Driver",
+      "vehicle": "Vehicle",
+      "lossRatio": "Loss Ratio",
+      "createdAt": "Created",
+      "updatedAt": "Last Update",
+      "actions": {
+        "confirmDelivery": "Confirm Delivery",
+        "raiseDispute": "Raise Dispute",
+        "viewEvidence": "See Evidence"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "funded": "Funded",
+        "dispatched": "Don send",
+        "delivered": "Don deliver",
+        "completed": "Completed",
+        "disputed": "Disputed",
+        "resolved": "Resolved",
+        "cancelled": "Cancelled"
+      },
+      "confirmDeliveryTitle": "Confirm Delivery",
+      "confirmDeliveryMessage": "You sure you want to confirm delivery? This thing no go reverse.",
+      "disputeTitle": "Raise Dispute",
+      "disputeReason": "Reason for dispute",
+      "disputePlaceholder": "Describe the matter...",
+      "error": "Fail to load trade details"
+    }
+  }
+}

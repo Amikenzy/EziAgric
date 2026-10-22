@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "Na-ebuta...",
+    "error": "Njehie",
+    "retry": "Lee anya",
+    "cancel": "Kagbuo",
+    "confirm": "Nọgodo",
+    "submit": "Nyefee",
+    "save": "Chekwa",
+    "back": "Azụ",
+    "next": "Na-esote",
+    "success": "Ịga nke ọma",
+    "failed": "Ewepụla"
+  },
+  "wallet": {
+    "appName": "EziAgric",
+    "tagline": "Nchebe dị ka Ọrụ maka Azụmaahịa Ugh",
+    "connect": "Jikọọ Wallet",
+    "connecting": "Na-edozi...",
+    "disconnect": "Kpụpụ",
+    "instructions": "Iji malite, jikọọ wallet Stellar gị na-eji Freighter ma ọ bụ Albedo.",
+    "status": {
+      "connected": "Jikọrọ",
+      "disconnected": "Kpụpụrụ",
+      "pending": "Na-echere",
+      "error": "Njikọ njehie"
+    }
+  },
+  "home": {
+    "welcome": "Nnabata na EziAgric",
+    "subtitle": "Azụmaahịa ugbo dị n'ime blockchain",
+    "createTrade": "Mepụta Azụmaahịa",
+    "myTrades": "Azụmaahịa m",
+    "marketplace": "Ahịa",
+    "settings": "Ntọala",
+    "recentTrades": "Azụmaahịa nso",
+    "noTrades": "Enweghị azụmaahịa",
+    "viewAll": "Lelee niile",
+    "activeTrades": "Azụmaahịa na-arụ ọrụ",
+    "completedTrades": "Azụmaahịa emechara"
+  },
+  "trade": {
+    "create": {
+      "title": "Mepụta Azụmaahịa",
+      "selectProduct": "Họrọ ngwaahịa",
+      "enterAmount": "Dee ego",
+      "selectSeller": "Họrọ onye na-ere",
+      "lossRatio": "Nkwụsị ego mfu",
+      "submit": "Nyefee Azụmaahịa",
+      "success": "Emepụtara azụmaahịa!",
+      "error": "Enwetela azụmaahịa",
+      "validation": {
+        "amountRequired": "Ego dị mkpa",
+        "amountPositive": "Ego ga-abụrụ akụkụ",
+        "productRequired": "Họrọ ngwaahịa",
+        "sellerRequired": "Họrọ onye na-ere"
+      }
+    },
+    "detail": {
+      "title": "Nhazi Azụmaahịa",
+      "tradeId": "ID azụmaahịa",
+      "status": "Steeti",
+      "amount": "Ego",
+      "product": "Ngwaahịa",
+      "seller": "Onye na-ere",
+      "buyer": "Onye na-azụ",
+      "driver": "Onye na-anya",
+      "vehicle": "Ọkụ",
+      "lossRatio": "Nkwụsị ego",
+      "createdAt": "Mepụtara",
+      "updatedAt": "Emelitere",
+      "actions": {
+        "confirmDelivery": "Nọgodo nnyefe",
+        "raiseDispute": "Mepụta esemokwu",
+        "viewEvidence": "Lele ihe akaebe"
+      },
+      "statuses": {
+        "pending": "Na-echere",
+        "funded": "E nyere ego",
+        "dispatched": "Ezipu",
+        "delivered": "E nyefe",
+        "completed": "Emechara",
+        "disputed": "Nke esemokwu",
+        "resolved": "E zoro",
+        "cancelled": "Kagburu"
+      },
+      "confirmDeliveryTitle": "Nọgodo nnyefe",
+      "confirmDeliveryMessage": "ị nọgodesiri ịnnyefe? Enweghị ike ịlaghachi.",
+      "disputeTitle": "Mepụta esemokwu",
+      "disputeReason": "Ihe kpatara esemokwu",
+      "disputePlaceholder": "Dee nsogbu...",
+      "error": "Enwetaghị nhazi azụmaahịa"
+    }
+  }
+}

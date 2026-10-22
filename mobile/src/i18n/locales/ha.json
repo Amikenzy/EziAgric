@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Kuskure",
+    "retry": "Maimaita",
+    "cancel": "Cancel",
+    "confirm": "Tabbatar",
+    "submit": "Samar",
+    "save": "Ajiye",
+    "back": "Baya",
+    "next": "Gaba",
+    "success": "Nasara",
+    "failed": "Karya"
+  },
+  "wallet": {
+    "appName": "EziAgric",
+    "tagline": "Amincewa a matsayin Sabis na Siyasa ta Noma",
+    "connect": "HaɗaWallet",
+    "connecting": "Ana haɗawa...",
+    "disconnect": "Rage",
+    "instructions": "Don fara, haɗa wallet ɗin Stellar ɗin ka ta amfani da Freighter ko Albedo.",
+    "status": {
+      "connected": "An haɗa",
+      "disconnected": "An rage",
+      "pending": "A jira",
+      "error": "Kuskuren haɗawa"
+    }
+  },
+  "home": {
+    "welcome": "Barka da zuwa EziAgric",
+    "subtitle": "Siyasar noma ta blockchain",
+    "createTrade": "Yi Ciniki",
+    "myTrades": "Cinikayena",
+    "marketplace": "Market",
+    "settings": "Saituna",
+    "recentTrades": "Cinikayen da suka wuce",
+    "noTrades": "Babu ciniki",
+    "viewAll": "Duba duka",
+    "activeTrades": "Cinikayen aiki",
+    "completedTrades": "Cinikayen akaayi"
+  },
+  "trade": {
+    "create": {
+      "title": "Yi Ciniki",
+      "selectProduct": "Zabi Kayayyaki",
+      "enterAmount": "Shigar da adadi",
+      "selectSeller": "Zabi Mai sayarwa",
+      "lossRatio": "Rashin rabin asarar",
+      "submit": "Samar Ciniki",
+      "success": "An yi ciniki nasarar!",
+      "error": "Kunshi ciniki",
+      "validation": {
+        "amountRequired": "Adadin da ake buƙata",
+        "amountPositive": "Adadin ya kamata ya kasance mai kyau",
+        "productRequired": "Zabi kayayyaki",
+        "sellerRequired": "Zabi mai sayarwa"
+      }
+    },
+    "detail": {
+      "title": "Cikakkun Ciniki",
+      "tradeId": "ID na ciniki",
+      "status": "Matsayi",
+      "amount": "Adadi",
+      "product": "Kayayyaki",
+      "seller": "Mai sayarwa",
+      "buyer": "Mai siyarwa",
+      "driver": "Direct",
+      "vehicle": "Motar",
+      "lossRatio": "Rashin rabi",
+      "createdAt": "An yi",
+      "updatedAt": "Sabuntawa ta ƙarshe",
+      "actions": {
+        "confirmDelivery": "Tabbatar da isarwa",
+        "raiseDispute": "Tura korafi",
+        "viewEvidence": "Duba hujja"
+      },
+      "statuses": {
+        "pending": "A jira",
+        "funded": "An tallafa",
+        "dispatched": "An aika",
+        "delivered": "An isar",
+        "completed": "Anayi",
+        "disputed": "An korifta",
+        "resolved": "An warware",
+        "cancelled": "An soke"
+      },
+      "confirmDeliveryTitle": "Tabbatar da isarwa",
+      "confirmDeliveryMessage": "Ka tabbatar da isarwa? Wannan ba za a iya juya ba.",
+      "disputeTitle": "Tura korafi",
+      "disputeReason": "Dalilin korafin",
+      "disputePlaceholder": "Bayani...",
+      "error": "Kunshi loda cikakkun ciniki"
+    }
+  }
+}
